@@ -3,7 +3,7 @@ require 'import_o_matic/formats/csv'
 
 module ImportOMmatic
   module Importable
-    ACTIONS = {
+    DEFAULT_ACTIONS = {
       create: "ADD",
       update: "UPDATE",
       destroy: "REMOVE"
@@ -29,14 +29,14 @@ module ImportOMmatic
           self.incremental_id_column = incremental_import[:incremental_id_column] || :id
           self.incremental_actions = calculate_actions incremental_import[:incremental_actions]
         end
-        self.incremental_actions ||= ACTIONS
+        self.incremental_actions ||= DEFAULT_ACTIONS
       end
 
       def calculate_actions actions
         if actions.is_a? Hash
-          actions.keys.short == ACTIONS.keys.short ? actions : ACTIONS
+          actions.keys.short == DEFAULT_ACTIONS.keys.short ? actions : DEFAULT_ACTIONS
         else
-          ACTIONS
+          DEFAULT_ACTIONS
         end
       end
 
