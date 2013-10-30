@@ -16,9 +16,9 @@ module ImportOMmatic
 
     module ClassMethods
       def import_o_matic options
-        cattr_accessor :import_columns, :import_format, :import_options, :transforms,
-          :incremental_action_column, :incremental_actions, :incremental_id_column
-        self.import_columns = options[:import_columns] || self.attribute_names
+        cattr_accessor :import_columns, :import_format, :import_options,
+          :transforms, :incremental_action_column, :incremental_actions,
+          :incremental_id_column, :incremental_id_attribute
         self.import_columns = self.match_values(options[:import_columns] || self.attribute_names)
         self.import_format = options[:import_format] || :csv
         self.import_options = options[:import_options] || {}
@@ -27,7 +27,8 @@ module ImportOMmatic
         if incremental_import
           incremental_import = {} unless incremental_import.is_a? Hash
           self.incremental_action_column = incremental_import[:incremental_action_column] || :action
-          self.incremental_id_column = incremental_import[:incremental_id_column] || :id
+          self.incremental_id_column = self.match_values(incremental_import[:incremental_id_column]).keys.first || :id
+          self.incremental_id_attribute = self.match_values(incremental_import[:incremental_id_column]).values.first || :id
           self.incremental_actions = calculate_actions incremental_import[:incremental_actions]
         end
         self.incremental_actions ||= DEFAULT_ACTIONS
@@ -52,8 +53,8 @@ module ImportOMmatic
             end
           end
           action = row[self.incremental_action_column.to_s]
-          external_id = row[self.incremental_id_column.to_s]
-          self.import_attributes attributes, action, external_id
+          incremental_id = row[self.incremental_id_column.to_s]
+          self.import_attributes attributes, action, incremental_id
         end
       end
 
@@ -70,13 +71,13 @@ module ImportOMmatic
         end
       end
 
-      def import_attributes attributes, action, external_id
+      def import_attributes attributes, action, incremental_id
         case action
         when self.incremental_actions[:update]
-          element = self.where(self.incremental_id_column.to_s => external_id).first
+          element = self.where(self.incremental_id_attribute => incremental_id).first
           element.update_attributes attributes if element
         when self.incremental_actions[:destroy]
-          element = self.where(self.incremental_id_column => external_id).first
+          element = self.where(self.incremental_id_attribute => incremental_id).first
           element.destroy if element
         else
           self.create attributes
