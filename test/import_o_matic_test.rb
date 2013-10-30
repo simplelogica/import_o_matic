@@ -5,7 +5,7 @@ require 'test_helper'
 class ImportOMaticTest < ActiveSupport::TestCase
   # called before every single test
   def setup
-    @last_import_data = { string_field: "import two", integer_field: 2 }
+    @last_import_data = { string_field: "import four", integer_field: 4, extra_field: "extra" }
   end
 
   test "should_import_all_rows" do
@@ -15,7 +15,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     count_after = ImportModel.count
 
-    assert_equal 2, count_after - count_before
+    assert_equal 4, count_after - count_before
   end
 
   test "should_import_all_attributes" do
@@ -28,8 +28,8 @@ class ImportOMaticTest < ActiveSupport::TestCase
     assert_equal @last_import_data[:integer_field], last_import_model.integer_field
   end
 
-  test "should_import_import_attributes" do
-    ImportModel.import_o_matic import_attributes: [:string_field],
+  test "should_import_import_columns" do
+    ImportModel.import_o_matic import_columns: [:string_field],
                   import_options: { headers: true }
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
@@ -46,7 +46,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     last_import_model = ImportModel.last
 
-    assert_equal 3, last_import_model.integer_field
+    assert_equal @last_import_data[:integer_field].next, last_import_model.integer_field
   end
 
   test "should_transform_attributes_with_method" do
@@ -56,17 +56,17 @@ class ImportOMaticTest < ActiveSupport::TestCase
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     last_import_model = ImportModel.last
 
-    assert_equal 3, last_import_model.integer_field
+    assert_equal @last_import_data[:integer_field].next, last_import_model.integer_field
   end
 
   test "should_ignore_nil_attribute_transform" do
-    ImportModel.import_o_matic import_attributes: [:integer_field, :extra_field],
+    ImportModel.import_o_matic import_columns: [:integer_field, :extra_field],
                   import_options: { headers: true },
                   transforms: { extra_field: ->(value) { nil } }
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     last_import_model = ImportModel.last
 
-    assert_equal 2, last_import_model.integer_field
+    assert_equal @last_import_data[:integer_field], last_import_model.integer_field
   end
 end
