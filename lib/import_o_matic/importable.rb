@@ -19,6 +19,7 @@ module ImportOMmatic
         cattr_accessor :import_columns, :import_format, :import_options, :transforms,
           :incremental_action_column, :incremental_actions, :incremental_id_column
         self.import_columns = options[:import_columns] || self.attribute_names
+        self.import_columns = self.match_values(options[:import_columns] || self.attribute_names)
         self.import_format = options[:import_format] || :csv
         self.import_options = options[:import_options] || {}
         self.transforms = options[:transforms] || {}
@@ -44,7 +45,7 @@ module ImportOMmatic
         format_class = "import_o_matic/formats/#{import_format.to_s}".classify.constantize
         format_class.import_from_file file_path, import_options do |row|
           attributes = {}
-          self.match_columns.each do |column, attribute|
+          self.import_columns.each do |column, attribute|
             if row[column.to_s]
               value = self.transform_attribute(attribute, row[column.to_s])
               attributes[attribute] = value if value
@@ -56,12 +57,14 @@ module ImportOMmatic
         end
       end
 
-      def match_columns
-        case self.import_columns
+      def match_values values
+        case values
+        when Symbol, String
+          Hash[values,values]
         when Array
-          Hash[ *self.import_columns.collect { |c| [c, c] }.flatten ]
+          Hash[*values.collect{ |c| [c, c] }.flatten]
         when Hash
-          import_columns
+          values
         else
           {}
         end
