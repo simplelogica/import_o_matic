@@ -1,0 +1,5 @@
+action,string_field,integer_field,extra_field
+UPDATE,import one,1,extra
+REMOVE,import two,2,extra
+ADD,import three,3,extra
+ADD,import four,4,extra
