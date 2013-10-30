@@ -79,10 +79,26 @@ class ImportOMaticTest < ActiveSupport::TestCase
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/incremental_import_models.csv'
     first_import_data = { string_field: "import one", integer_field: 1, extra_field: "extra" }
-    first_import = ImportModel.where(integer_field: first_import_data[:integer_field]).first
     last_import = ImportModel.last
 
-    assert_equal first_import_data[:string_field], first_import.string_field
+    assert_equal first_import_data[:string_field], import_models(:one).string_field
+    assert_raises(ActiveRecord::RecordNotFound) { import_models(:two) }
+    assert_equal @last_import_data[:integer_field], last_import.integer_field
+    assert_equal @last_import_data[:string_field], last_import.string_field
+    assert_equal @last_import_data[:integer_field], last_import.integer_field
+  end
+
+  test "should_do_import_incremental_with_match_column" do
+    ImportModel.import_o_matic import_options: { headers: true },
+                  incremental_import: {
+                    incremental_id_column: { external_id: :string_field }
+                  }
+
+    ImportModel.import_from_file 'test/dummy/test/fixtures/incremental_import_models.csv'
+    first_import_data = { string_field: "import one", integer_field: 1, extra_field: "extra", external_id: 1 }
+    last_import = ImportModel.last
+
+    assert_equal first_import_data[:string_field], import_models(:one).string_field
     assert_raises(ActiveRecord::RecordNotFound) { import_models(:two) }
     assert_equal @last_import_data[:integer_field], last_import.integer_field
     assert_equal @last_import_data[:string_field], last_import.string_field
