@@ -44,15 +44,26 @@ module ImportOMmatic
         format_class = "import_o_matic/formats/#{import_format.to_s}".classify.constantize
         format_class.import_from_file file_path, import_options do |row|
           attributes = {}
-          self.import_columns.each do |attribute|
-            if row[attribute.to_s]
-              value = self.transform_attribute(attribute, row[attribute.to_s])
+          self.match_columns.each do |column, attribute|
+            if row[column.to_s]
+              value = self.transform_attribute(attribute, row[column.to_s])
               attributes[attribute] = value if value
             end
           end
           action = row[self.incremental_action_column.to_s]
           external_id = row[self.incremental_id_column.to_s]
           self.import_attributes attributes, action, external_id
+        end
+      end
+
+      def match_columns
+        case self.import_columns
+        when Array
+          Hash[ *self.import_columns.collect { |c| [c, c] }.flatten ]
+        when Hash
+          import_columns
+        else
+          {}
         end
       end
 

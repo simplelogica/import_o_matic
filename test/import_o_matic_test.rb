@@ -29,7 +29,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
     assert_equal @last_import_data[:integer_field], last_import.integer_field
   end
 
-  test "should_import_import_columns" do
+  test "should_import_import_array_columns" do
     ImportModel.import_o_matic import_columns: [:string_field],
                   import_options: { headers: true }
 
@@ -37,6 +37,17 @@ class ImportOMaticTest < ActiveSupport::TestCase
     last_import = ImportModel.last
 
     assert_equal @last_import_data[:string_field], last_import.string_field
+    assert_equal nil, last_import.integer_field
+  end
+
+  test "should_import_import_hash_columns" do
+    ImportModel.import_o_matic import_columns: {extra_field: :string_field},
+                  import_options: { headers: true }
+
+    ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal @last_import_data[:extra_field], last_import.string_field
     assert_equal nil, last_import.integer_field
   end
 
