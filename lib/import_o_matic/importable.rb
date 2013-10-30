@@ -88,9 +88,7 @@ module ImportOMmatic
         case transform
         when Proc
           transform.call(value)
-        when String
-          self.send(transform, value)
-        when Symbol
+        when Symbol, String
           self.send(transform, value)
         else
           value
