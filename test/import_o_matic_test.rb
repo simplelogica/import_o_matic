@@ -2,6 +2,30 @@
 
 require 'test_helper'
 
+class ArrayColumnsOptions < ImportOMmatic::Options
+  import_columns [:string_field]
+end
+
+class HashColumnsOptions < ImportOMmatic::Options
+  import_columns extra_field: :string_field
+end
+
+class ProcTransformOptions < ImportOMmatic::Options
+  import_transforms integer_field: ->(value) { value.next }
+end
+
+class MethodTransformOptions < ImportOMmatic::Options
+  import_transforms integer_field: :plus_one
+end
+
+class IncrementalOptions < ImportOMmatic::Options
+  incremental relation: :integer_field
+end
+
+class IncrementalRelationOptions < ImportOMmatic::Options
+  incremental relation: {external_id: :string_field}
+end
+
 class ImportOMaticTest < ActiveSupport::TestCase
   fixtures :import_models
   # called before every single test
@@ -10,7 +34,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
   end
 
   test "should_import_all_rows" do
-    ImportModel.import_o_matic import_options: { headers: true }
+    ImportModel.import_o_matic
 
     count_before = ImportModel.count
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
@@ -20,7 +44,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
   end
 
   test "should_import_all_attributes" do
-    ImportModel.import_o_matic import_options: { headers: true }
+    ImportModel.import_o_matic
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     last_import = ImportModel.last
@@ -30,8 +54,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
   end
 
   test "should_import_import_array_columns" do
-    ImportModel.import_o_matic import_columns: [:string_field],
-                  import_options: { headers: true }
+    ImportModel.import_o_matic ArrayColumnsOptions
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     last_import = ImportModel.last
@@ -41,8 +64,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
   end
 
   test "should_import_import_hash_columns" do
-    ImportModel.import_o_matic import_columns: {extra_field: :string_field},
-                  import_options: { headers: true }
+    ImportModel.import_o_matic HashColumnsOptions
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     last_import = ImportModel.last
@@ -52,8 +74,8 @@ class ImportOMaticTest < ActiveSupport::TestCase
   end
 
   test "should_transform_attributes_with_proc" do
-    ImportModel.import_o_matic import_options: { headers: true },
-                  transforms: { integer_field: ->(value) { value.next } }
+    ImportModel.import_o_matic ProcTransformOptions
+
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     last_import = ImportModel.last
@@ -62,8 +84,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
   end
 
   test "should_transform_attributes_with_method" do
-    ImportModel.import_o_matic import_options: { headers: true },
-                  transforms: { integer_field: :plus_one }
+    ImportModel.import_o_matic ProcTransformOptions
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/import_models.csv'
     last_import = ImportModel.last
@@ -72,10 +93,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
   end
 
   test "should_do_import_incremental" do
-    ImportModel.import_o_matic import_options: { headers: true },
-                  incremental_import: {
-                    incremental_id_column: :integer_field
-                  }
+    ImportModel.import_o_matic IncrementalOptions
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/incremental_import_models.csv'
     first_import_data = { string_field: "import one", integer_field: 1, extra_field: "extra" }
@@ -89,10 +107,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
   end
 
   test "should_do_import_incremental_with_match_column" do
-    ImportModel.import_o_matic import_options: { headers: true },
-                  incremental_import: {
-                    incremental_id_column: { external_id: :string_field }
-                  }
+    ImportModel.import_o_matic IncrementalRelationOptions
 
     ImportModel.import_from_file 'test/dummy/test/fixtures/incremental_import_models.csv'
     first_import_data = { string_field: "import one", integer_field: 1, extra_field: "extra", external_id: 1 }
