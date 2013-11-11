@@ -1,5 +1,4 @@
-ImportOMatic
-==
+= ImportOMatic
 
 ImportOMatic is a WIP Rails 4 gem for import data to active record models. Features:
 
