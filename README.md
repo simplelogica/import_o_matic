@@ -11,7 +11,7 @@ Features:
 
 Import-O-Matic is in develop for a ruby 2 and rails 4 project, so it is tested in this environments only by the moment
 
-## Install
+## :floppy_disk: Install
 
 Add the gem to your gemfile:
 
@@ -31,7 +31,7 @@ Add to Import-O-Matic your model:
 
 By default, Import-O-Matic creates a new instance of the model and try to map each column in the importation file with an attribute with same name.
 
-## Configure
+## :video_game: Configure
 
 Create an import config class in app/imports:
 
@@ -51,7 +51,7 @@ And use it in your model:
   end
 ```
 
-### Configure options:
+### :book: Configure options:
 
 Select format (default :csv):
 
@@ -100,10 +100,10 @@ Apply a function to a value before update the attribute with a method:
 
 You can use different actions (create, update or delete) for incremental imports. You need a column for set the relation between import data and existing objects, and another column with the action. **When the import can´t match an action, it uses create by default**.
 
-- Default relation column: external_id
-- Default relation model attribute: external_id
-- Default action column: action
-- Default actions values: { create: "ADD", update: "UPDATE", destroy: "REMOVE" }
+- Default relation column: *_id_*
+- Default relation model attribute: *_id_*
+- Default action column: *_action_*
+- Default actions values: *_{ create: "ADD", update: "UPDATE", destroy: "REMOVE" }_*
 
 Set relation column:
 
