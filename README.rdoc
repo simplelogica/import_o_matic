@@ -1,8 +1,0 @@
-= ImportOMatic
-
-ImportOMatic is a WIP Rails 4 gem for import data to active record models. Features:
-
-  * Supports multiple formats (only csv now :-S).
-  * Clean configuration (external class).
-  * Text logs.
-  * Multiple actions per row (create, update, delete).
