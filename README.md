@@ -9,7 +9,7 @@ Features:
  - Text logs.
  - Multiple actions per row (create, update, delete).
 
-Import-O-Matic is in develop for a ruby 2 and rails 4 project, so it is tested in this environments only by the moment
+Import-O-Matic is in development for a ruby 2 and rails 4 project, so it is only tested in this environment at the moment.
 
 ## :floppy_disk: Install
 
