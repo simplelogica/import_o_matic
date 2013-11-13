@@ -28,10 +28,10 @@ module ImportOMmatic
       counters[kind] = counters[kind].to_i.next
     end
 
-    def print_errors row, item
+    def print_errors text, item
       self.counter :errors
-      self.error "-- Errors with row:"
-      self.error "\t#{row.to_s.strip}"
+      self.error "-- Errors with data:"
+      self.error "\t#{text}"
       self.error "\t#{item.errors.full_messages.to_sentence}"
     end
   end

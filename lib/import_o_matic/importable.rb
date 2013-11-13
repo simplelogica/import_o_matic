@@ -41,7 +41,11 @@ module ImportOMmatic
           element = self.where(import_options.incremental_id_attribute => incremental_id).first
           if element
             element.update_attributes attributes
-            self.import_log.counter import_options.actions[:update]
+            if element.errors.any?
+              self.import_log.print_errors(attributes.inspect, element)
+            else
+              self.import_log.counter import_options.actions[:update]
+            end
           end
         when import_options.actions[:destroy]
           element = self.where(import_options.incremental_id_attribute => incremental_id).first
@@ -52,7 +56,7 @@ module ImportOMmatic
         else
           element = self.create attributes
           if element.errors.any?
-            self.import_log.print_errors(row, element)
+            self.import_log.print_errors(attributes.inspect, element)
           else
             self.import_log.counter import_options.actions[:create]
           end
