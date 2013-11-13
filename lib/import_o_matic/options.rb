@@ -63,6 +63,17 @@ module ImportOMmatic
       end
     end
 
+    def get_attributes row
+      attributes = {}
+      self.columns.each do |column, attribute|
+        if row[column.to_s]
+          value = self.transform_column(column, row[column.to_s])
+          attributes[attribute] = value if value
+        end
+      end
+      attributes
+    end
+
     private
 
     def self.set_actions actions

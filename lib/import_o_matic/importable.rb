@@ -22,13 +22,8 @@ module ImportOMmatic
         format_class = "import_o_matic/formats/#{import_options.format.to_s}".classify.constantize
 
         format_class.import_from_file file_path, import_options.format_options do |row|
-          attributes = {}
-          import_options.columns.each do |column, attribute|
-            if row[column.to_s]
-              value = import_options.transform_column(column, row[column.to_s])
-              attributes[attribute] = value if value
-            end
-          end
+          item_attributes = import_options.get_attributes row
+
           action = row[import_options.incremental_action_column.to_s]
           incremental_id = row[import_options.incremental_id_column.to_s]
           self.import_log.counter :total
