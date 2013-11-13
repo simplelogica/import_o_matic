@@ -112,7 +112,7 @@ module ImportOMmatic
     protected
 
     def set_translated_attributes options
-      self.importable_class.accepts_nested_attributes_for :translations
+      self.importable_class.accepts_nested_attributes_for :translations unless self.importable_class.respond_to? :translations_attributes
       self.translated_attributes = {}
       I18n.available_locales.each do |locale|
         match_attributes = self.importable_class.translated_attribute_names.map { |attribute| ["#{attribute}-#{locale}", attribute] }

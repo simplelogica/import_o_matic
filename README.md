@@ -138,6 +138,8 @@ Set action column values:
 
 You can import globalize translated attributes with this option. It's not configurable at the moment.
 
+**NOTE: The gem will add '*accepts_nested_attributes_for :translations*' to model if is not already set.**
+
 The gem gets automatically the model translated attributes and search for columns named "attribute-locale" for each available locale. For example:
 
 ```ruby
