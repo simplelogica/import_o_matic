@@ -8,6 +8,7 @@ Features:
  - Clean configuration (external class).
  - Text logs.
  - Multiple actions per row (create, update, delete).
+ - Globalize support
 
 Import-O-Matic is in development for a ruby 2 and rails 4 project, so it is only tested in this environment at the moment.
 
@@ -128,3 +129,31 @@ Set action column values:
 ```ruby
   incremental actions: { create: "ADD", update: "UPDATE", destroy: "REMOVE" }
 ```
+
+### :earth_africa: Globalize 4 support
+
+```ruby
+  globalize
+```
+
+You can import globalize translated attributes with this option. It's not configurable at the moment.
+
+The gem gets automatically the model translated attributes and search for columns named "attribute-locale" for each available locale. For example:
+
+```ruby
+  class MyModel < ActiveRecord::Base
+    ...
+    transtales :name
+    ...
+    import_o_matic MyModelImport
+    ...
+  end
+
+  class MyModelImport < ImportOMmatic::Options
+    ...
+    globalize
+    ...
+  end
+```
+
+The import looks for name-en, name-es... columns in the file, one for each locale in I18n.available_locales.
