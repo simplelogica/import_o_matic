@@ -9,7 +9,8 @@ module ImportOMmatic
     class_attribute :columns, :transforms, :format, :format_options,
                     :actions, :incremental_action_column,
                     :incremental_id_column, :incremental_id_attribute,
-                    :importable_class
+                    :importable_class, :translated_attributes,
+                    :globalize_options
 
     self.columns = {}
     self.transforms = {}
@@ -23,6 +24,7 @@ module ImportOMmatic
         if self.columns.blank?
           self.columns = self.class.convert_to_match_values(importable_class.attribute_names)
         end
+        self.set_translated_attributes self.globalize_options unless self.globalize_options.nil?
       end
     end
 
@@ -55,6 +57,19 @@ module ImportOMmatic
       end
     end
 
+    def self.globalize *options
+      self.globalize_options = *options
+    end
+
+    def set_translated_attributes options
+      self.translated_attributes = {}
+      self.importable_class.accepts_nested_attributes_for :translations
+      I18n.available_locales.each do |locale|
+        match_attributes = self.importable_class.translated_attribute_names.map { |attribute| ["#{attribute}-#{locale}", attribute] }
+        self.translated_attributes[locale] = self.class.convert_to_match_values(match_attributes)
+      end
+    end
+
     def transform_column column, value
       transform = self.transforms[column.to_sym]
       case transform
@@ -76,6 +91,20 @@ module ImportOMmatic
         end
       end
       attributes
+    end
+
+    def get_translated_attributes row
+      self.translated_attributes.map do |locale, attributes|
+        translation_attributes = {}
+        translation_attributes[:locale] = locale
+        attributes.each do |column, attribute|
+          if row[column.to_s]
+            value = self.transform_column(column, row[column.to_s])
+            translation_attributes[attribute] = value if value
+          end
+        end
+        translation_attributes
+      end unless self.translated_attributes.nil?
     end
 
     private

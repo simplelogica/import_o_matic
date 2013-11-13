@@ -11,7 +11,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131029155001) do
+ActiveRecord::Schema.define(version: 20131113135024) do
+
+  create_table "globalize_model_translations", force: true do |t|
+    t.integer  "globalize_model_id"
+    t.string   "title"
+    t.text     "body"
+    t.string   "locale"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "globalize_model_translations", ["globalize_model_id"], name: "index_globalize_model_translations_on_globalize_model_id"
+  add_index "globalize_model_translations", ["locale"], name: "index_globalize_model_translations_on_locale"
+
+  create_table "globalize_models", force: true do |t|
+    t.string   "string_field"
+    t.integer  "integer_field"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "import_models", force: true do |t|
     t.string   "string_field"

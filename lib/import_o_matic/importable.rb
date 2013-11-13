@@ -23,6 +23,9 @@ module ImportOMmatic
 
         format_class.import_from_file file_path, import_options.format_options do |row|
           item_attributes = import_options.get_attributes row
+          unless import_options.translated_attributes.nil?
+            item_attributes[:translations_attributes] = import_options.get_translated_attributes row
+          end
 
           action = row[import_options.incremental_action_column.to_s]
           incremental_id = row[import_options.incremental_id_column.to_s]

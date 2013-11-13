@@ -1,0 +1,5 @@
+string_field,integer_field,extra_field,title-en,title-es,body-en,body-es
+import one,1,extra,title 1,título 1,body 1,cuerpo 1
+import two,2,extra,title 2,título 2,body 2,cuerpo 2
+import three,3,extra,title 3,título 3,body 3,cuerpo 3
+import four,4,extra,title 4,título 4,body 4,cuerpo 4
