@@ -6,9 +6,10 @@ module ImportOMmatic
       destroy: "REMOVE"
     }.freeze
 
-    class_attribute  :columns, :transforms, :format, :format_options,
-                            :actions, :incremental_action_column,
-                            :incremental_id_column, :incremental_id_attribute
+    class_attribute :columns, :transforms, :format, :format_options,
+                    :actions, :incremental_action_column,
+                    :incremental_id_column, :incremental_id_attribute,
+                    :importable_class
 
     self.columns = {}
     self.transforms = {}
@@ -17,8 +18,11 @@ module ImportOMmatic
     self.actions = DEFAULT_ACTIONS
 
     def initialize importable_class
-      if self.columns.blank? && importable_class.is_a?(Class)
-        self.columns = self.class.convert_to_match_values(importable_class.attribute_names)
+      if importable_class.is_a?(Class)
+        self.importable_class = importable_class
+        if self.columns.blank?
+          self.columns = self.class.convert_to_match_values(importable_class.attribute_names)
+        end
       end
     end
 
