@@ -61,27 +61,6 @@ module ImportOMmatic
       self.globalize_options = *options
     end
 
-    def set_translated_attributes options
-      self.translated_attributes = {}
-      self.importable_class.accepts_nested_attributes_for :translations
-      I18n.available_locales.each do |locale|
-        match_attributes = self.importable_class.translated_attribute_names.map { |attribute| ["#{attribute}-#{locale}", attribute] }
-        self.translated_attributes[locale] = self.class.convert_to_match_values(match_attributes)
-      end
-    end
-
-    def transform_column column, value
-      transform = self.transforms[column.to_sym]
-      case transform
-      when Proc
-        transform.call(value)
-      when Symbol, String
-        self.send(transform, value)
-      else
-        value
-      end
-    end
-
     def get_attributes row
       attributes = {}
       self.columns.each do |column, attribute|
@@ -127,6 +106,29 @@ module ImportOMmatic
         values
       else
         {}
+      end
+    end
+
+    protected
+
+    def set_translated_attributes options
+      self.importable_class.accepts_nested_attributes_for :translations
+      self.translated_attributes = {}
+      I18n.available_locales.each do |locale|
+        match_attributes = self.importable_class.translated_attribute_names.map { |attribute| ["#{attribute}-#{locale}", attribute] }
+        self.translated_attributes[locale] = self.class.convert_to_match_values(match_attributes)
+      end
+    end
+
+    def transform_column column, value
+      transform = self.transforms[column.to_sym]
+      case transform
+      when Proc
+        transform.call(value)
+      when Symbol, String
+        self.send(transform, value)
+      else
+        value
       end
     end
   end
