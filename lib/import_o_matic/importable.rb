@@ -16,6 +16,10 @@ module ImportOMmatic
         self.import_options = import_class.new self
       end
 
+      def importable?
+        true
+      end
+
       def import_from_local
           import_from_file import_options.local_file_path
       end

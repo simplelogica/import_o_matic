@@ -37,6 +37,12 @@ class ImportOMaticTest < ActiveSupport::TestCase
     @last_import_data = { string_field: "import four", integer_field: 4, extra_field: "extra" }
   end
 
+  test "should_be_importable" do
+    ImportModel.import_o_matic
+
+    assert ImportModel.importable?
+  end
+
   test "should_import_all_rows" do
     ImportModel.import_o_matic
 

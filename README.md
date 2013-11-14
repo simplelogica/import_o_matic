@@ -30,6 +30,29 @@ Add to Import-O-Matic your model:
   end
 ```
 
+Ask your model:
+
+```ruby
+  MyModel.importable?
+```
+
+Import data:
+
+Add to Import-O-Matic your model:
+
+```ruby
+  MyModel.import_from_file 'path/to/file'
+```
+
+Or use a default local file (see file_path option):
+
+```ruby
+  MyModel.import_from_local
+```
+
+Take a look at _log/importations_ for process information.
+
+
 By default, Import-O-Matic creates a new instance of the model and try to map each column in the importation file with an attribute with same name.
 
 ## :video_game: Configure
