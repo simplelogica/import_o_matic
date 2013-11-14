@@ -16,6 +16,10 @@ module ImportOMmatic
         self.import_options = import_class.new self
       end
 
+      def import_from_local
+          import_from_file import_options.local_file_path
+      end
+
       def import_from_file file_path
         self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
         self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"

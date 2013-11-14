@@ -10,7 +10,7 @@ module ImportOMmatic
                     :actions, :incremental_action_column,
                     :incremental_id_column, :incremental_id_attribute,
                     :importable_class, :translated_attributes,
-                    :globalize_options
+                    :globalize_options, :local_file_path
 
     self.columns = {}
     self.transforms = {}
@@ -59,6 +59,10 @@ module ImportOMmatic
 
     def self.globalize *options
       self.globalize_options = *options
+    end
+
+    def self.local_file_path path
+      self.local_file_path = path if path.is_a?(String)
     end
 
     def get_attributes row
