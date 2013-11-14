@@ -30,11 +30,16 @@ class LocalImportOptions < ImportOMmatic::Options
   file_path Rails.root.join('test/fixtures/import_models.csv')
 end
 
+class StripImportOptions < ImportOMmatic::Options
+  strip_values
+  import_columns extra_field: :string_field
+end
+
 class ImportOMaticTest < ActiveSupport::TestCase
   fixtures :import_models
   # called before every single test
   def setup
-    @last_import_data = { string_field: "import four", integer_field: 4, extra_field: "extra" }
+    @last_import_data = { string_field: "import four", integer_field: 4, extra_field: "  extra" }
   end
 
   test "should_be_importable" do
@@ -81,6 +86,15 @@ class ImportOMaticTest < ActiveSupport::TestCase
 
     assert_equal @last_import_data[:string_field], last_import.string_field
     assert_equal @last_import_data[:integer_field], last_import.integer_field
+  end
+
+  test "should_strip_attributes" do
+    ImportModel.import_o_matic StripImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal @last_import_data[:extra_field].strip, last_import.string_field
   end
 
   test "should_import_import_array_columns" do

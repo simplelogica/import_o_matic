@@ -95,6 +95,12 @@ Set a default file for local import (with import_from_local method):
   file_path 'path/to/file'
 ```
 
+Strip blanks arround columns after read (default false):
+
+```ruby
+  strip_values
+```
+
 Select column names from file to import with an array:
 
 ```ruby

@@ -10,13 +10,14 @@ module ImportOMmatic
                     :actions, :incremental_action_column,
                     :incremental_id_column, :incremental_id_attribute,
                     :importable_class, :translated_attributes,
-                    :globalize_options, :local_file_path
+                    :globalize_options, :local_file_path, :strip
 
     self.columns = {}
     self.transforms = {}
     self.format = :csv
     self.format_options = {headers: true}
     self.actions = DEFAULT_ACTIONS
+    self.strip = false
 
     def initialize importable_class
       if importable_class.is_a?(Class)
@@ -65,10 +66,16 @@ module ImportOMmatic
       self.local_file_path = path if [String, Pathname].include? path.class
     end
 
+    def self.strip_values
+      self.strip = true
+    end
+
     def get_attributes row
       attributes = {}
       self.columns.each do |column, attribute|
         if row[column.to_s]
+          column_value = row[column.to_s]
+          column_value.strip! if strip
           value = self.transform_column(column, row[column.to_s])
           attributes[attribute] = value if value
         end
@@ -82,7 +89,9 @@ module ImportOMmatic
         translation_attributes[:locale] = locale
         attributes.each do |column, attribute|
           if row[column.to_s]
-            value = self.transform_column(column, row[column.to_s])
+            column_value = row[column.to_s]
+            column_value.strip! if strip
+            value = self.transform_column(column, column_value)
             translation_attributes[attribute] = value if value
           end
         end
