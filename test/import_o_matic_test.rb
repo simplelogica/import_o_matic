@@ -26,6 +26,10 @@ class IncrementalRelationOptions < ImportOMmatic::Options
   incremental relation: {external_id: :string_field}
 end
 
+class LocalImportOptions < ImportOMmatic::Options
+  file_path Rails.root.join('test/fixtures/import_models.csv')
+end
+
 class ImportOMaticTest < ActiveSupport::TestCase
   fixtures :import_models
   # called before every single test
@@ -41,6 +45,26 @@ class ImportOMaticTest < ActiveSupport::TestCase
     count_after = ImportModel.count
 
     assert_equal 4, count_after - count_before
+  end
+
+  test "should_import_from_local" do
+    ImportModel.import_o_matic LocalImportOptions
+
+    count_before = ImportModel.count
+    ImportModel.import_from_local
+    count_after = ImportModel.count
+
+    assert_equal 4, count_after - count_before
+  end
+
+  test "should_not_import_from_local_when_not_exists" do
+    ImportModel.import_o_matic
+
+    count_before = ImportModel.count
+    ImportModel.import_from_local
+    count_after = ImportModel.count
+
+    assert_equal 0, count_after - count_before
   end
 
   test "should_import_all_attributes" do

@@ -21,7 +21,7 @@ module ImportOMmatic
       end
 
       def import_from_file file_path
-        if File.exists? Rails.root.join file_path
+        if file_path && File.exists?(Rails.root.join file_path)
           self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
           self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
           format_class = "import_o_matic/formats/#{import_options.format.to_s}".classify.constantize

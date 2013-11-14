@@ -69,7 +69,7 @@ Select format with options (default { headers: true }):
 Set a default file for local import (with import_from_local method):
 
 ```ruby
-  local_file_path 'path/to/file'
+  file_path 'path/to/file'
 ```
 
 Select column names from file to import with an array:
