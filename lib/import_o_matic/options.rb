@@ -63,7 +63,6 @@ module ImportOMmatic
 
     def self.file_path path
       self.local_file_path = path if [String, Pathname].include? path.class
-      puts self.local_file_path
     end
 
     def get_attributes row
