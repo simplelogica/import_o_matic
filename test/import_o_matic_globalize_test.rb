@@ -19,7 +19,7 @@ class ImportOMaticTest < ActiveSupport::TestCase
 
     GlobalizeModel.import_o_matic GlobalizeOptions
 
-    GlobalizeModel.import_from_file 'test/dummy/test/fixtures/globalize_models.csv'
+    GlobalizeModel.import_from_file Rails.root.join 'test/fixtures/globalize_models.csv'
     last_import = GlobalizeModel.last
 
     assert_equal last_globalize_data["title-en"], last_import.read_attribute(:title, locale: :en)

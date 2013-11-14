@@ -21,22 +21,28 @@ module ImportOMmatic
       end
 
       def import_from_file file_path
-        self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
-        self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
-        format_class = "import_o_matic/formats/#{import_options.format.to_s}".classify.constantize
+        if File.exists? Rails.root.join file_path
+          self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
+          self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
+          format_class = "import_o_matic/formats/#{import_options.format.to_s}".classify.constantize
 
-        format_class.import_from_file file_path, import_options.format_options do |row|
-          item_attributes = import_options.get_attributes row
-          unless import_options.translated_attributes.nil?
-            item_attributes[:translations_attributes] = import_options.get_translated_attributes row
+          format_class.import_from_file file_path, import_options.format_options do |row|
+            item_attributes = import_options.get_attributes row
+            unless import_options.translated_attributes.nil?
+              item_attributes[:translations_attributes] = import_options.get_translated_attributes row
+            end
+
+            action = row[import_options.incremental_action_column.to_s]
+            incremental_id = row[import_options.incremental_id_column.to_s]
+            self.import_log.counter :total
+            self.import_attributes item_attributes, action, incremental_id
           end
-
-          action = row[import_options.incremental_action_column.to_s]
-          incremental_id = row[import_options.incremental_id_column.to_s]
-          self.import_log.counter :total
-          self.import_attributes item_attributes, action, incremental_id
+          self.import_log.finish
+        else
+          self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
+          self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
+          self.import_log.info "---- File not found."
         end
-        self.import_log.finish
       end
 
       def import_attributes attributes, action, incremental_id
