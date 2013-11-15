@@ -32,8 +32,6 @@ module ImportOMmatic
             self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
             format_class = "import_o_matic/formats/#{import_options.format.to_s}".classify.constantize
 
-            raise "Error"
-
             format_class.import_from_file file_path, import_options.format_options do |row|
               item_attributes = import_options.get_attributes row
               unless import_options.translated_attributes.nil?
