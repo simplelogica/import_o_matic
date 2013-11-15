@@ -7,7 +7,7 @@ require "import_o_matic/version"
 Gem::Specification.new do |s|
   s.name        = "import_o_matic"
   s.version     = ImportOMatic::VERSION
-  s.authors     = ["Rubén Sierra González"]
+  s.authors     = ["Ruben Sierra Gonzelez"]
   s.email       = ["ruben@simplelogica.net"]
   s.summary     = "Data importation"
   s.description = "Data importation"
