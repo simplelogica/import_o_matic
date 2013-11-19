@@ -16,6 +16,7 @@ end
 
 class MethodTransformOptions < ImportOMmatic::Options
   import_transforms integer_field: :plus_one
+  def plus_one value; value.next; end
 end
 
 class IncrementalOptions < ImportOMmatic::Options
@@ -140,7 +141,6 @@ class ImportOMaticTest < ActiveSupport::TestCase
 
   test "should_transform_attributes_with_proc" do
     ImportModel.import_o_matic ProcTransformOptions
-
 
     ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
     last_import = ImportModel.last
