@@ -71,7 +71,7 @@ module ImportOMmatic
               translations_attributes.each do |translation_attributes|
                 translation = element.translation_for translation_attributes[:locale]
                 translation.update_attributes translation_attributes
-              end
+              end if translations_attributes
               self.import_log.counter import_options.actions[:update]
             end
           end
