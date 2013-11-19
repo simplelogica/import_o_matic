@@ -60,10 +60,18 @@ module ImportOMmatic
         when import_options.actions[:update]
           element = self.where(import_options.incremental_id_attribute => incremental_id).first
           if element
+            # Extract translations_attributes for update one to one
+            translations_attributes = attributes.delete :translations_attributes
             element.update_attributes attributes
             if element.errors.any?
               self.import_log.print_errors(attributes.inspect, element)
             else
+              # Translatio id is needed for nested update so we do updates one to one
+              # If there is no id, the translation is created
+              translations_attributes.each do |translation_attributes|
+                translation = element.translation_for translation_attributes[:locale]
+                translation.update_attributes translation_attributes
+              end
               self.import_log.counter import_options.actions[:update]
             end
           end
