@@ -134,6 +134,16 @@ Apply a function to a value before update the attribute with a method:
   incremental relation: :column1
 ```
 
+Apply a function to a element after import action with porcs and methods:
+```ruby
+  after_actions :plus_one,
+    ->(element) { element.update_attributes string_attribute: 'after' }
+
+  def plus_one element
+    element.update_attributes integer_attribute: element.integer_attribute.next
+  end
+```
+
 You can use different actions (create, update or delete) for incremental imports. You need a column for set the relation between import data and existing objects, and another column with the action. **When the import can´t match an action, it uses create by default**.
 
 - Default relation column: *_id_*

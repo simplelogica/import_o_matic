@@ -41,7 +41,8 @@ module ImportOMmatic
               action = row[import_options.incremental_action_column.to_s]
               incremental_id = row[import_options.incremental_id_column.to_s]
               self.import_log.counter :total
-              self.import_attributes item_attributes, action, incremental_id
+              element = self.import_attributes item_attributes, action, incremental_id
+              import_options.call_after_actions element if import_options.afters.any?
             end
             self.import_log.finish
           else
@@ -56,6 +57,7 @@ module ImportOMmatic
       end
 
       def import_attributes attributes, action, incremental_id
+        element = nil
         case action
         when import_options.actions[:update]
           element = self.where(import_options.incremental_id_attribute => incremental_id).first
@@ -89,6 +91,7 @@ module ImportOMmatic
             self.import_log.counter import_options.actions[:create]
           end
         end
+        element
       end
 
     end

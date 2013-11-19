@@ -10,7 +10,8 @@ module ImportOMmatic
                     :actions, :incremental_action_column,
                     :incremental_id_column, :incremental_id_attribute,
                     :importable_class, :translated_attributes,
-                    :globalize_options, :local_file_path, :strip
+                    :globalize_options, :local_file_path, :strip,
+                    :afters
 
     self.columns = {}
     self.transforms = {}
@@ -18,6 +19,7 @@ module ImportOMmatic
     self.format_options = {headers: true}
     self.actions = DEFAULT_ACTIONS
     self.strip = false
+    self.afters = []
 
     def initialize importable_class
       if importable_class.is_a?(Class)
@@ -70,6 +72,10 @@ module ImportOMmatic
       self.strip = true
     end
 
+    def self.after_actions *options
+      self.afters = *options
+    end
+
     def get_attributes row
       attributes = {}
       self.columns.each do |column, attribute|
@@ -97,6 +103,17 @@ module ImportOMmatic
         end
         translation_attributes
       end unless self.translated_attributes.nil?
+    end
+
+    def call_after_actions element
+      self.afters.each do |after|
+        case after
+        when Proc
+          after.call(element)
+        when Symbol, String
+          self.send(after, element)
+        end
+      end if afters.any? && element.present?
     end
 
     private
