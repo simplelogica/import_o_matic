@@ -88,9 +88,9 @@ module ImportOMmatic
         columns = [columns] unless columns.is_a? Array
         column_values = []
         columns.each do |column|
-          if row[column.to_s]
+          if row.headers.include? column.to_s
             column_values << row[column.to_s]
-            column_values.last.strip! if strip
+            column_values.last.strip! if strip && column_values.last
           end
         end
         value = self.transform_attribute(attribute, column_values)
@@ -104,9 +104,9 @@ module ImportOMmatic
         translation_attributes = {}
         translation_attributes[:locale] = locale
         attributes.each do |attribute, column|
-          if row[column.to_s]
+          if row.headers.include? column.to_s
             column_value = row[column.to_s]
-            column_value.strip! if strip
+            column_value.strip! if strip && column_value
             value = self.transform_attribute(attribute, [column_value])
             translation_attributes[attribute] = value if value
           end
