@@ -222,11 +222,14 @@ The gem gets automatically the model translated attributes and search for column
 The import looks for name-en, name-es... columns in the file, one for each locale in I18n.available_locales.
 
 
-### :white_check_mark: TODO:
+# :white_check_mark: TODO:
 
+- __Globalize support.__
+- __Multiple column transformations.__
 - Better tests.
+- Better logs.
 - More ruby and rails versions.
 - Configuration for globalize fields.
 - Multiple assigns for globalize fields.
 ...
-- More cool stuff :disappointed:
+- Some cool stuff :disappointed:.
