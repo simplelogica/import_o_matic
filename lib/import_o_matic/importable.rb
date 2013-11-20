@@ -50,11 +50,12 @@ module ImportOMmatic
           else
             self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
             self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
-            self.import_log.info "---- File not found."
+            self.import_log.error " File not found."
           end
         rescue Exception => e
           self.import_log ||= ImportOMmatic::Logger.new(self.name.underscore)
           self.import_log.error "Unexpected exception: #{e.message}"
+          self.import_log.error e.backtrace
         end
       end
 
