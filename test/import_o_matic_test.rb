@@ -3,11 +3,11 @@
 require 'test_helper'
 
 class ArrayColumnsOptions < ImportOMmatic::Options
-  import_columns [:string_field]
+  import_matches [:string_field]
 end
 
 class HashColumnsOptions < ImportOMmatic::Options
-  import_columns extra_field: :string_field
+  import_matches string_field: :extra_field
 end
 
 class ProcTransformOptions < ImportOMmatic::Options
@@ -17,6 +17,15 @@ end
 class MethodTransformOptions < ImportOMmatic::Options
   import_transforms integer_field: :plus_one
   def plus_one value; value.next; end
+end
+
+class MultipleTransformColumnsOptions < ImportOMmatic::Options
+  import_matches string_field: [:string_field, :extra_field]
+
+  import_transforms string_field: :full_string
+  def full_string string, extra
+    "#{string} #{extra}"
+  end
 end
 
 class IncrementalOptions < ImportOMmatic::Options
@@ -33,7 +42,7 @@ end
 
 class StripImportOptions < ImportOMmatic::Options
   strip_values
-  import_columns extra_field: :string_field
+  import_matches string_field: :extra_field
 end
 
 class BeforeProcImportOptions < ImportOMmatic::Options
@@ -176,6 +185,15 @@ class ImportOMaticTest < ActiveSupport::TestCase
     last_import = ImportModel.last
 
     assert_equal @last_import_data[:integer_field].next, last_import.integer_field
+  end
+
+  test "should_multiple_transform_attributes_with_method" do
+    ImportModel.import_o_matic MultipleTransformColumnsOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal "#{@last_import_data[:string_field]} #{@last_import_data[:extra_field]}", last_import.string_field
   end
 
   test "should_call_before_action_with_proc" do

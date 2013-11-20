@@ -6,7 +6,7 @@ module ImportOMmatic
       destroy: "REMOVE"
     }.freeze
 
-    class_attribute :columns, :transforms, :format, :format_options,
+    class_attribute :matches, :transforms, :format, :format_options,
                     :actions, :incremental_action_column,
                     :incremental_id_column, :incremental_id_attribute,
                     :importable_class, :translated_attributes,
@@ -14,7 +14,7 @@ module ImportOMmatic
                     :afters, :befores
 
 
-    self.columns = {}
+    self.matches = {}
     self.transforms = {}
     self.format = :csv
     self.format_options = {headers: true}
@@ -26,15 +26,15 @@ module ImportOMmatic
     def initialize importable_class
       if importable_class.is_a?(Class)
         self.importable_class = importable_class
-        if self.columns.blank?
-          self.columns = self.class.convert_to_match_values(importable_class.attribute_names)
+        if self.matches.blank?
+          self.matches = self.class.convert_to_match_values(importable_class.attribute_names)
         end
         self.set_translated_attributes self.globalize_options unless self.globalize_options.nil?
       end
     end
 
-    def self.import_columns options
-      self.columns = self.convert_to_match_values(options)
+    def self.import_matches options
+      self.matches = self.convert_to_match_values(options)
     end
 
     def self.import_transforms options
@@ -84,13 +84,17 @@ module ImportOMmatic
 
     def get_attributes row
       attributes = {}
-      self.columns.each do |column, attribute|
-        if row[column.to_s]
-          column_value = row[column.to_s]
-          column_value.strip! if strip
-          value = self.transform_column(column, row[column.to_s])
-          attributes[attribute] = value if value
+      self.matches.each do |attribute, columns|
+        columns = [columns] unless columns.is_a? Array
+        column_values = []
+        columns.each do |column|
+          if row[column.to_s]
+            column_values << row[column.to_s]
+            column_values.last.strip! if strip
+          end
         end
+        value = self.transform_attribute(attribute, column_values)
+        attributes[attribute] = value if value
       end
       attributes
     end
@@ -99,11 +103,11 @@ module ImportOMmatic
       self.translated_attributes.map do |locale, attributes|
         translation_attributes = {}
         translation_attributes[:locale] = locale
-        attributes.each do |column, attribute|
+        attributes.each do |attribute, column|
           if row[column.to_s]
             column_value = row[column.to_s]
             column_value.strip! if strip
-            value = self.transform_column(column, column_value)
+            value = self.transform_attribute(attribute, [column_value])
             translation_attributes[attribute] = value if value
           end
         end
@@ -147,20 +151,20 @@ module ImportOMmatic
       self.importable_class.accepts_nested_attributes_for :translations unless self.importable_class.respond_to? :translations_attributes
       self.translated_attributes = {}
       Rails.configuration.i18n.available_locales.each do |locale|
-        match_attributes = self.importable_class.translated_attribute_names.map { |attribute| ["#{attribute}-#{locale}", attribute] }
+        match_attributes = self.importable_class.translated_attribute_names.map { |attribute| [attribute, "#{attribute}-#{locale}"] }
         self.translated_attributes[locale] = self.class.convert_to_match_values(match_attributes)
       end
     end
 
-    def transform_column column, value
-      transform = self.transforms[column.to_sym]
+    def transform_attribute attribute, values
+      transform = self.transforms[attribute.to_sym]
       case transform
       when Proc
-        transform.call(value)
+        transform.call(*values)
       when Symbol, String
-        self.send(transform, value)
+        self.send(transform,*values)
       else
-        value
+        values.first
       end
     end
 

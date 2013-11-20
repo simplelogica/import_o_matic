@@ -8,7 +8,7 @@ Features:
  - Clean configuration (external class).
  - Text logs.
  - Multiple actions per row (create, update, delete).
- - Globalize support
+ - Globalize support.
 
 Import-O-Matic is in development for a ruby 2 and rails 4 project, so it is only tested in this environment at the moment.
 
@@ -104,34 +104,40 @@ Strip blanks arround columns after read (default false):
 Select column names from file to import with an array:
 
 ```ruby
-  import_columns [:column1]
+  import_matches [:attribute1]
 ```
 
-Map column names with model attributes with a hash:
+Map model attribute names with column names with a hash:
 
 ```ruby
-  import_columns column1: :attribute1
+  import_matches attribute1: :column1
 ```
 
-Apply a function to a value before update the attribute with a Proc:
+Apply a function to values before update the attribute with a Proc:
 
 ```ruby
-  import_transforms column1: ->(value) { value.next }
+  import_transforms attribute1: ->(value) { value.next }
 ```
 
 Apply a function to a value before update the attribute with a method:
 
 ```ruby
-  import_transforms column1: :plus_one
+  import_transforms attribute1: :plus_one
 
   def plus_one value
     value.next
   end
 ```
 
-Apply a function to a value before update the attribute with a method:
+You can assign multiple columns to an attribute, but it needs a transformation or it will use first column by default. Take care with the params order, it needs to be the same of the columns declaration:
+
 ```ruby
-  incremental relation: :column1
+  import_matches full_name: [:name, :last_name]
+  import_transforms full_name: :join_name
+
+  def join_name name, last_name
+    "#{name} #{last_name}"
+  end
 ```
 
 Apply porcs or methods to the attribute hash before import action:
@@ -214,3 +220,13 @@ The gem gets automatically the model translated attributes and search for column
 ```
 
 The import looks for name-en, name-es... columns in the file, one for each locale in I18n.available_locales.
+
+
+### :white_check_mark: TODO:
+
+- Better tests.
+- More ruby and rails versions.
+- Configuration for globalize fields.
+- Multiple assigns for globalize fields.
+...
+- More cool stuff :disappointed:
