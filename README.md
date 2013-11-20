@@ -224,8 +224,6 @@ The import looks for name-en, name-es... columns in the file, one for each local
 
 # :white_check_mark: TODO:
 
-- __Globalize support.__
-- __Multiple column transformations.__
 - Better tests.
 - Better logs.
 - More ruby and rails versions.
