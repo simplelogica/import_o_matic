@@ -134,7 +134,17 @@ Apply a function to a value before update the attribute with a method:
   incremental relation: :column1
 ```
 
-Apply a function to a element after import action with porcs and methods:
+Apply porcs or methods to the attribute hash before import action:
+```ruby
+  after_actions :plus_one,
+    ->(attributes) { attributes.merge! string_attribute: 'after' }
+
+  def plus_one attributes
+    attributes.merge! integer_attribute: attributes["integer_attribute"].next
+  end
+```
+
+Apply porcs or methods to an element after import action:
 ```ruby
   after_actions :plus_one,
     ->(element) { element.update_attributes string_attribute: 'after' }

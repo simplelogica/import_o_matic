@@ -41,6 +41,8 @@ module ImportOMmatic
               action = row[import_options.incremental_action_column.to_s]
               incremental_id = row[import_options.incremental_id_column.to_s]
               self.import_log.counter :total
+
+              import_options.call_before_actions item_attributes if import_options.befores.any?
               element = self.import_attributes item_attributes, action, incremental_id
               import_options.call_after_actions element if import_options.afters.any?
             end

@@ -11,7 +11,8 @@ module ImportOMmatic
                     :incremental_id_column, :incremental_id_attribute,
                     :importable_class, :translated_attributes,
                     :globalize_options, :local_file_path, :strip,
-                    :afters
+                    :afters, :befores
+
 
     self.columns = {}
     self.transforms = {}
@@ -20,6 +21,7 @@ module ImportOMmatic
     self.actions = DEFAULT_ACTIONS
     self.strip = false
     self.afters = []
+    self.befores = []
 
     def initialize importable_class
       if importable_class.is_a?(Class)
@@ -76,6 +78,10 @@ module ImportOMmatic
       self.afters = *options
     end
 
+    def self.before_actions *options
+      self.befores = *options
+    end
+
     def get_attributes row
       attributes = {}
       self.columns.each do |column, attribute|
@@ -106,17 +112,15 @@ module ImportOMmatic
     end
 
     def call_after_actions element
-      self.afters.each do |after|
-        case after
-        when Proc
-          after.call(element)
-        when Symbol, String
-          self.send(after, element)
-        end
-      end if afters.any? && element.present?
+      call_actions self.afters, element
     end
 
-    private
+    def call_before_actions attributes
+      call_actions self.befores, attributes
+    end
+
+
+    protected
 
     def self.set_actions actions
       if actions.is_a? Hash
@@ -139,8 +143,6 @@ module ImportOMmatic
       end
     end
 
-    protected
-
     def set_translated_attributes options
       self.importable_class.accepts_nested_attributes_for :translations unless self.importable_class.respond_to? :translations_attributes
       self.translated_attributes = {}
@@ -160,6 +162,17 @@ module ImportOMmatic
       else
         value
       end
+    end
+
+    def call_actions callbacks, element
+      callbacks.each do |action|
+        case action
+        when Proc
+          action.call(element)
+        when Symbol, String
+          self.send(action, element)
+        end
+      end if callbacks.any? && element.present?
     end
   end
 end

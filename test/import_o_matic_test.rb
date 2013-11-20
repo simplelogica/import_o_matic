@@ -36,6 +36,27 @@ class StripImportOptions < ImportOMmatic::Options
   import_columns extra_field: :string_field
 end
 
+class BeforeProcImportOptions < ImportOMmatic::Options
+  before_actions ->(attributes) { attributes.merge! string_field: 'before' }
+end
+
+class BeforeMethodImportOptions < ImportOMmatic::Options
+  before_actions :plus_one
+
+  def plus_one attributes
+    attributes.merge! integer_field: attributes["integer_field"].next
+  end
+end
+
+class BeforeProcMethodImportOptions < ImportOMmatic::Options
+  before_actions :plus_one,
+    ->(attributes) { attributes.merge! string_field: 'before' }
+
+  def plus_one attributes
+    attributes.merge! integer_field: attributes["integer_field"].next
+  end
+end
+
 class AfterProcImportOptions < ImportOMmatic::Options
   after_actions ->(element) { element.update_attributes string_field: 'after' }
 end
@@ -154,6 +175,34 @@ class ImportOMaticTest < ActiveSupport::TestCase
     ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
     last_import = ImportModel.last
 
+    assert_equal @last_import_data[:integer_field].next, last_import.integer_field
+  end
+
+  test "should_call_before_action_with_proc" do
+    ImportModel.import_o_matic BeforeProcImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal 'before', last_import.string_field
+  end
+
+  test "should_call_before_action_with_method" do
+    ImportModel.import_o_matic BeforeMethodImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal @last_import_data[:integer_field].next, last_import.integer_field
+  end
+
+  test "should_call_before_action_with_proc_and_method" do
+    ImportModel.import_o_matic BeforeProcMethodImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal 'before', last_import.string_field
     assert_equal @last_import_data[:integer_field].next, last_import.integer_field
   end
 
