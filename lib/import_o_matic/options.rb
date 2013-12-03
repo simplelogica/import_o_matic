@@ -93,8 +93,10 @@ module ImportOMmatic
             column_values.last.strip! if strip && column_values.last
           end
         end
-        value = self.transform_attribute(attribute, column_values)
-        attributes[attribute] = value if value
+        unless column_values.empty?
+          value = self.transform_attribute(attribute, column_values)
+          attributes[attribute] = value
+        end
       end
       attributes
     end
@@ -108,7 +110,7 @@ module ImportOMmatic
             column_value = row[column.to_s]
             column_value.strip! if strip && column_value
             value = self.transform_attribute(attribute, [column_value])
-            translation_attributes[attribute] = value if value
+            translation_attributes[attribute] = value
           end
         end
         translation_attributes
