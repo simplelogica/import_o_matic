@@ -140,7 +140,7 @@ You can assign multiple columns to an attribute, but it needs a transformation o
   end
 ```
 
-Apply porcs or methods to the attribute hash before import action:
+Apply procs or methods to the attribute hash before import action:
 ```ruby
   before_actions :plus_one,
     ->(attributes) { attributes.merge! string_attribute: 'after' }
@@ -150,7 +150,7 @@ Apply porcs or methods to the attribute hash before import action:
   end
 ```
 
-Apply porcs or methods to an element after import action:
+Apply procs or methods to an element after import action:
 ```ruby
   after_actions :plus_one,
     ->(element) { element.update_attributes string_attribute: 'after' }
