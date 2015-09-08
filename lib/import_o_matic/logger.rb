@@ -8,6 +8,7 @@ module ImportOMmatic
     end
 
     def initialize object_name
+      object_name.gsub!('/', '_')
       self.counters = {}
       import_path = "log/importations/#{object_name}"
       FileUtils.mkdir_p(import_path) unless File.directory?(import_path)
