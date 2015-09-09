@@ -14,4 +14,4 @@ gemspec
 # gem 'debugger'
 
 # Only for dummy app
-gem "globalize", "~> 4.0.0.alpha.2"
+gem "globalize", "~> 5.0.0"
