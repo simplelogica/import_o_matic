@@ -46,14 +46,14 @@ class StripImportOptions < ImportOMmatic::Options
 end
 
 class BeforeProcImportOptions < ImportOMmatic::Options
-  before_actions ->(attributes) { attributes.merge! string_field: 'before' }
+  before_actions ->(element) { element.string_field = 'before' }
 end
 
 class BeforeMethodImportOptions < ImportOMmatic::Options
   before_actions :plus_one
 
-  def plus_one attributes
-    attributes.merge! integer_field: attributes["integer_field"].next
+  def plus_one element
+    element.integer_field = element.integer_field.next
   end
 end
 
@@ -61,8 +61,8 @@ class BeforeProcMethodImportOptions < ImportOMmatic::Options
   before_actions :plus_one,
     ->(attributes) { attributes.merge! string_field: 'before' }
 
-  def plus_one attributes
-    attributes.merge! integer_field: attributes["integer_field"].next
+  def plus_one element
+    element.integer_field = element.integer_field.next
   end
 end
 

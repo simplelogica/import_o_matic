@@ -41,8 +41,11 @@ module ImportOMmatic
               action = row[import_options.incremental_action_column.to_s]
               incremental_id = row[import_options.incremental_id_column.to_s]
               self.import_log.counter :total
-              import_options.call_before_actions item_attributes if import_options.befores.any?
-              element = self.import_attributes item_attributes, action, incremental_id
+
+              element = self.initialize_element item_attributes, action, incremental_id
+              element.raw_data = row
+              import_options.call_before_actions element if import_options.befores.any?
+              element = self.execute_action element, item_attributes, action
               import_options.call_after_actions element if import_options.afters.any?
             end
             self.import_log.finish
@@ -58,30 +61,35 @@ module ImportOMmatic
         end
       end
 
-      def import_attributes attributes, action, incremental_id
-        element = nil
-        case action
-        when import_options.actions[:update]
-          update_element attributes, incremental_id
-        when import_options.actions[:destroy]
-          destroy_element incremental_id
+      def initialize_element attributes, action, incremental_id
+        if action == import_options.actions[:create]
+          self.new attributes
         else
-          add_element attributes
+          self.where(import_options.incremental_id_attribute => incremental_id).first
         end
       end
 
-      def add_element attributes
-        element = self.create attributes
-        if element.errors.any?
-          self.import_log.print_errors(attributes.inspect, element)
+      def execute_action element, attributes, action
+        case action
+        when import_options.actions[:update]
+          update_element element, attributes
+        when import_options.actions[:destroy]
+          destroy_element element
         else
+          save_element element
+        end
+      end
+
+      def save_element element
+        if element.save
           self.import_log.counter import_options.actions[:create]
+        else
+          self.import_log.print_errors(element.attributes.inspect, element)
         end
         element
       end
 
-      def destroy_element incremental_id
-        element = self.where(import_options.incremental_id_attribute => incremental_id).first
+      def destroy_element element
         if element
           self.import_log.counter import_options.actions[:destroy]
           element.destroy
@@ -89,8 +97,7 @@ module ImportOMmatic
         element
       end
 
-      def update_element attributes, incremental_id
-        element = self.where(import_options.incremental_id_attribute => incremental_id).first
+      def update_element element, attributes
         if element
           # Extract translations_attributes for update one to one
           translations_attributes = attributes.delete :translations_attributes
