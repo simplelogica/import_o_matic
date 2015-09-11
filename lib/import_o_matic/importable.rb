@@ -12,7 +12,7 @@ module ImportOMmatic
 
     module ClassMethods
       def import_o_matic import_class = ImportOMmatic::Options
-        cattr_accessor :import_options, :import_log
+        cattr_accessor :import_options, :import_log, :raw_data
         self.import_options = import_class.new self
       end
 
@@ -41,7 +41,6 @@ module ImportOMmatic
               action = row[import_options.incremental_action_column.to_s]
               incremental_id = row[import_options.incremental_id_column.to_s]
               self.import_log.counter :total
-
               import_options.call_before_actions item_attributes if import_options.befores.any?
               element = self.import_attributes item_attributes, action, incremental_id
               import_options.call_after_actions element if import_options.afters.any?
@@ -63,35 +62,49 @@ module ImportOMmatic
         element = nil
         case action
         when import_options.actions[:update]
-          element = self.where(import_options.incremental_id_attribute => incremental_id).first
-          if element
-            # Extract translations_attributes for update one to one
-            translations_attributes = attributes.delete :translations_attributes
-            element.update_attributes attributes
-            if element.errors.any?
-              self.import_log.print_errors(attributes.inspect, element)
-            else
-              # Translatio id is needed for nested update so we do updates one to one
-              # If there is no id, the translation is created
-              translations_attributes.each do |translation_attributes|
-                translation = element.translation_for translation_attributes[:locale]
-                translation.update_attributes translation_attributes
-              end if translations_attributes
-              self.import_log.counter import_options.actions[:update]
-            end
-          end
+          update_element attributes, incremental_id
         when import_options.actions[:destroy]
-          element = self.where(import_options.incremental_id_attribute => incremental_id).first
-          if element
-            self.import_log.counter import_options.actions[:destroy]
-            element.destroy
-          end
+          destroy_element incremental_id
         else
-          element = self.create attributes
+          add_element attributes
+        end
+      end
+
+      def add_element attributes
+        element = self.create attributes
+        if element.errors.any?
+          self.import_log.print_errors(attributes.inspect, element)
+        else
+          self.import_log.counter import_options.actions[:create]
+        end
+        element
+      end
+
+      def destroy_element incremental_id
+        element = self.where(import_options.incremental_id_attribute => incremental_id).first
+        if element
+          self.import_log.counter import_options.actions[:destroy]
+          element.destroy
+        end
+        element
+      end
+
+      def update_element attributes, incremental_id
+        element = self.where(import_options.incremental_id_attribute => incremental_id).first
+        if element
+          # Extract translations_attributes for update one to one
+          translations_attributes = attributes.delete :translations_attributes
+          element.update_attributes attributes
           if element.errors.any?
             self.import_log.print_errors(attributes.inspect, element)
           else
-            self.import_log.counter import_options.actions[:create]
+            # Translatio id is needed for nested update so we do updates one to one
+            # If there is no id, the translation is created
+            translations_attributes.each do |translation_attributes|
+              translation = element.translation_for translation_attributes[:locale]
+              translation.update_attributes translation_attributes
+            end if translations_attributes
+            self.import_log.counter import_options.actions[:update]
           end
         end
         element
