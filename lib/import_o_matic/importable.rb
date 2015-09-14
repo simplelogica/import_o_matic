@@ -43,7 +43,8 @@ module ImportOMmatic
               self.import_log.counter :total
 
               element = self.initialize_element item_attributes, action, incremental_id
-              element.raw_data = row
+              # Assign raw data in case is useful in callbacks
+              element.raw_data = row if element
               import_options.call_before_actions element if import_options.befores.any?
               element = self.execute_action element, item_attributes, action
               import_options.call_after_actions element if import_options.afters.any?
