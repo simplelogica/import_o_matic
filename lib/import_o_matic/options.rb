@@ -125,6 +125,9 @@ module ImportOMmatic
       call_actions self.befores, element
     end
 
+    def default_action
+      actions[:create] || DEFAULT_ACTIONS[:create]
+    end
 
     protected
 

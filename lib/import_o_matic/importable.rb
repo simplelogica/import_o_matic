@@ -38,7 +38,7 @@ module ImportOMmatic
                 item_attributes[:translations_attributes] = import_options.get_translated_attributes row
               end
 
-              action = row[import_options.incremental_action_column.to_s]
+              action = row[import_options.incremental_action_column.to_s] || import_options.default_action
               incremental_id = row[import_options.incremental_id_column.to_s]
               self.import_log.counter :total
 
