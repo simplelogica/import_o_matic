@@ -143,10 +143,10 @@ You can assign multiple columns to an attribute, but it needs a transformation o
 Apply procs or methods to the attribute hash before import action:
 ```ruby
   before_actions :plus_one,
-    ->(attributes) { attributes.merge! string_attribute: 'after' }
+    ->(element) { element.string_attribute = 'after' }
 
   def plus_one attributes
-    attributes.merge! integer_attribute: attributes["integer_attribute"].next
+    attributes.integer_attribute += 1
   end
 ```
 

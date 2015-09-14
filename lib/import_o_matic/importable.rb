@@ -12,7 +12,7 @@ module ImportOMmatic
 
     module ClassMethods
       def import_o_matic import_class = ImportOMmatic::Options
-        cattr_accessor :import_options, :import_log
+        cattr_accessor :import_options, :import_log, :raw_data
         self.import_options = import_class.new self
       end
 
@@ -38,12 +38,15 @@ module ImportOMmatic
                 item_attributes[:translations_attributes] = import_options.get_translated_attributes row
               end
 
-              action = row[import_options.incremental_action_column.to_s]
+              action = row[import_options.incremental_action_column.to_s] || import_options.default_action
               incremental_id = row[import_options.incremental_id_column.to_s]
               self.import_log.counter :total
 
-              import_options.call_before_actions item_attributes if import_options.befores.any?
-              element = self.import_attributes item_attributes, action, incremental_id
+              element = self.initialize_element item_attributes, action, incremental_id
+              # Assign raw data in case is useful in callbacks
+              element.raw_data = row if element
+              import_options.call_before_actions element if import_options.befores.any?
+              element = self.execute_action element, item_attributes, action
               import_options.call_after_actions element if import_options.afters.any?
             end
             self.import_log.finish
@@ -59,39 +62,58 @@ module ImportOMmatic
         end
       end
 
-      def import_attributes attributes, action, incremental_id
-        element = nil
+      def initialize_element attributes, action, incremental_id
+        case action
+        when import_options.actions[:update], import_options.actions[:destroy]
+          self.where(import_options.incremental_id_attribute => incremental_id).first
+        else
+          self.new attributes
+        end
+      end
+
+      def execute_action element, attributes, action
         case action
         when import_options.actions[:update]
-          element = self.where(import_options.incremental_id_attribute => incremental_id).first
-          if element
-            # Extract translations_attributes for update one to one
-            translations_attributes = attributes.delete :translations_attributes
-            element.update_attributes attributes
-            if element.errors.any?
-              self.import_log.print_errors(attributes.inspect, element)
-            else
-              # Translatio id is needed for nested update so we do updates one to one
-              # If there is no id, the translation is created
-              translations_attributes.each do |translation_attributes|
-                translation = element.translation_for translation_attributes[:locale]
-                translation.update_attributes translation_attributes
-              end if translations_attributes
-              self.import_log.counter import_options.actions[:update]
-            end
-          end
+          update_element element, attributes
         when import_options.actions[:destroy]
-          element = self.where(import_options.incremental_id_attribute => incremental_id).first
-          if element
-            self.import_log.counter import_options.actions[:destroy]
-            element.destroy
-          end
+          destroy_element element
         else
-          element = self.create attributes
+          save_element element
+        end
+      end
+
+      def save_element element
+        if element.save
+          self.import_log.counter import_options.actions[:create]
+        else
+          self.import_log.print_errors(element.attributes.inspect, element)
+        end
+        element
+      end
+
+      def destroy_element element
+        if element
+          self.import_log.counter import_options.actions[:destroy]
+          element.destroy
+        end
+        element
+      end
+
+      def update_element element, attributes
+        if element
+          # Extract translations_attributes for update one to one
+          translations_attributes = attributes.delete :translations_attributes
+          element.update_attributes attributes
           if element.errors.any?
             self.import_log.print_errors(attributes.inspect, element)
           else
-            self.import_log.counter import_options.actions[:create]
+            # Translatio id is needed for nested update so we do updates one to one
+            # If there is no id, the translation is created
+            translations_attributes.each do |translation_attributes|
+              translation = element.translation_for translation_attributes[:locale]
+              translation.update_attributes translation_attributes
+            end if translations_attributes
+            self.import_log.counter import_options.actions[:update]
           end
         end
         element

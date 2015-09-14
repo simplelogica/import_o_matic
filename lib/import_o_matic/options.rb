@@ -121,10 +121,13 @@ module ImportOMmatic
       call_actions self.afters, element
     end
 
-    def call_before_actions attributes
-      call_actions self.befores, attributes
+    def call_before_actions element
+      call_actions self.befores, element
     end
 
+    def default_action
+      actions[:create] || DEFAULT_ACTIONS[:create]
+    end
 
     protected
 
