@@ -59,7 +59,7 @@ end
 
 class BeforeProcMethodImportOptions < ImportOMmatic::Options
   before_actions :plus_one,
-    ->(attributes) { attributes.merge! string_field: 'before' }
+    ->(element) { element.string_field = 'before' }
 
   def plus_one element
     element.integer_field = element.integer_field.next
