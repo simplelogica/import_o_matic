@@ -62,10 +62,11 @@ module ImportOMmatic
       end
 
       def initialize_element attributes, action, incremental_id
-        if action == import_options.actions[:create]
-          self.new attributes
-        else
+        case action
+        when import_options.actions[:update], import_options.actions[:destroy]
           self.where(import_options.incremental_id_attribute => incremental_id).first
+        else
+          self.new attributes
         end
       end
 
