@@ -65,7 +65,9 @@ module ImportOMmatic
       def initialize_element attributes, action, incremental_id
         case action
         when import_options.actions[:update], import_options.actions[:destroy]
-          self.where(import_options.incremental_id_attribute => incremental_id).first
+          element_scope = self.where(import_options.incremental_id_attribute => incremental_id)
+          element_scope = element_scope.send(import_options.scope_name) if import_options.scope_name
+          element_scope.first
         else
           self.new attributes
         end

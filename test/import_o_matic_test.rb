@@ -32,6 +32,11 @@ class IncrementalOptions < ImportOMmatic::Options
   incremental relation: :integer_field
 end
 
+class DefaultScopeOptions < ImportOMmatic::Options
+  incremental relation: :integer_field
+  use_scope :custom_scope
+end
+
 class IncrementalRelationOptions < ImportOMmatic::Options
   incremental relation: {external_id: :string_field}
 end
@@ -276,6 +281,19 @@ class ImportOMaticTest < ActiveSupport::TestCase
     assert_equal first_import_data[:string_field], import_models(:one).string_field
     assert_raises(ActiveRecord::RecordNotFound) { import_models(:two) }
     assert_equal @last_import_data[:integer_field], last_import.integer_field
+    assert_equal @last_import_data[:string_field], last_import.string_field
+    assert_equal @last_import_data[:integer_field], last_import.integer_field
+  end
+
+  test "should_do_import_with_scoped_items" do
+    ImportModel.import_o_matic DefaultScopeOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/incremental_import_models.csv'
+    first_import_data = { string_field: "import one", integer_field: 1, extra_field: "extra" }
+    last_import = ImportModel.last
+
+    assert_equal first_import_data[:string_field], import_models(:one).string_field
+    assert ImportModel.exists?(id: import_models(:two).id)
     assert_equal @last_import_data[:string_field], last_import.string_field
     assert_equal @last_import_data[:integer_field], last_import.integer_field
   end

@@ -11,7 +11,7 @@ module ImportOMmatic
                     :incremental_id_column, :incremental_id_attribute,
                     :importable_class, :translated_attributes,
                     :globalize_options, :local_file_path, :strip,
-                    :afters, :befores
+                    :afters, :befores, :scope_name
 
 
     self.matches = {}
@@ -22,6 +22,7 @@ module ImportOMmatic
     self.strip = false
     self.afters = []
     self.befores = []
+    self.scope_name = nil
 
     def initialize importable_class
       if importable_class.is_a?(Class)
@@ -127,6 +128,10 @@ module ImportOMmatic
 
     def default_action
       actions[:create] || DEFAULT_ACTIONS[:create]
+    end
+
+    def self.use_scope scope_name
+      self.scope_name = scope_name
     end
 
     protected
