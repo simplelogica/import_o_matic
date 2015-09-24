@@ -25,14 +25,14 @@ module ImportOMmatic
       end
 
       def import_from_file file_path
-        begin
-          if file_path && File.exists?(Rails.root.join file_path)
+        if file_path && File.exists?(Rails.root.join file_path)
 
-            self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
-            self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
-            format_class = "import_o_matic/formats/#{import_options.format.to_s}".classify.constantize
+          self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
+          self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
+          format_class = "import_o_matic/formats/#{import_options.format.to_s}".classify.constantize
 
-            format_class.import_from_file file_path, import_options.format_options do |row|
+          format_class.import_from_file file_path, import_options.format_options do |row|
+            begin
               item_attributes = import_options.get_attributes row
               unless import_options.translated_attributes.nil?
                 item_attributes[:translations_attributes] = import_options.get_translated_attributes row
@@ -48,18 +48,25 @@ module ImportOMmatic
               import_options.call_before_actions element if import_options.befores.any?
               element = self.execute_action element, item_attributes, action
               import_options.call_after_actions element if import_options.afters.any?
+            rescue Exception => e
+              self.import_log ||= ImportOMmatic::Logger.new(self.name.underscore)
+              self.import_log.counter action
+              self.import_log.error "Unexpected exception: #{e.message}"
+              self.import_log.error "Backtrace: #{e.backtrace}"
+              self.import_log.error "Data: #{row}"
+              self.import_log.error "Element: #{element.inspect}" if element
             end
-            self.import_log.finish
-          else
-            self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
-            self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
-            self.import_log.error " File not found."
           end
-        rescue Exception => e
-          self.import_log ||= ImportOMmatic::Logger.new(self.name.underscore)
-          self.import_log.error "Unexpected exception: #{e.message}"
-          self.import_log.error e.backtrace
+          self.import_log.finish
+        else
+          self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
+          self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
+          self.import_log.error " File not found."
         end
+      rescue Exception => e
+        self.import_log ||= ImportOMmatic::Logger.new(self.name.underscore)
+        self.import_log.error "Unexpected exception: #{e.message}"
+        self.import_log.error e.backtrace
       end
 
       def initialize_element attributes, action, incremental_id
