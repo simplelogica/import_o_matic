@@ -35,11 +35,11 @@ module ImportOMmatic
     end
 
     def self.import_matches options
-      self.matches = self.convert_to_match_values(options)
+      self.matches.merge self.convert_to_match_values(options)
     end
 
     def self.import_transforms options
-      self.transforms = self.convert_to_match_values(options)
+      self.transforms.merge self.convert_to_match_values(options)
     end
 
     def self.import_format options
@@ -76,11 +76,11 @@ module ImportOMmatic
     end
 
     def self.after_actions *options
-      self.afters = *options
+      self.afters.concat *options
     end
 
     def self.before_actions *options
-      self.befores = *options
+      self.befores.concat *options
     end
 
     def get_attributes row
