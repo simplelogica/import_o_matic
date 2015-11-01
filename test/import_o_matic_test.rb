@@ -28,6 +28,17 @@ class MultipleTransformColumnsOptions < ImportOMmatic::Options
   end
 end
 
+class MultipleDeclarationsOptions < ImportOMmatic::Options
+  import_matches [:integer_field]
+  import_transforms integer_field: ->(value) { value.next }
+
+  import_matches string_field: [:string_field, :extra_field]
+  import_transforms string_field: :full_string
+  def full_string string, extra
+    "#{string} #{extra}"
+  end
+end
+
 class IncrementalOptions < ImportOMmatic::Options
   incremental relation: :integer_field
 end
@@ -198,6 +209,16 @@ class ImportOMaticTest < ActiveSupport::TestCase
     ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
     last_import = ImportModel.last
 
+    assert_equal "#{@last_import_data[:string_field]} #{@last_import_data[:extra_field]}", last_import.string_field
+  end
+
+  test "should_multiple_declarations" do
+    ImportModel.import_o_matic MultipleDeclarationsOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal @last_import_data[:integer_field].next, last_import.integer_field
     assert_equal "#{@last_import_data[:string_field]} #{@last_import_data[:extra_field]}", last_import.string_field
   end
 
