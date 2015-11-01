@@ -50,9 +50,9 @@ module ImportOMmatic
               import_options.call_after_actions element if import_options.afters.any?
             rescue Exception => e
               self.import_log ||= ImportOMmatic::Logger.new(self.name.underscore)
-              self.import_log.counter action
+              self.import_log.counter :errors
               self.import_log.error "Unexpected exception: #{e.message}"
-              self.import_log.error "Backtrace: #{e.backtrace}"
+              self.import_log.error "Backtrace: #{e.backtrace.join('\n')}"
               self.import_log.error "Data: #{row}"
               self.import_log.error "Element: #{element.inspect}" if element
             end
