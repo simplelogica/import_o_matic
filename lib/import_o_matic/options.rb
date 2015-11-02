@@ -77,7 +77,7 @@ module ImportOMmatic
     end
 
     def self.after_actions *options
-      self.afters = *options
+      self.afters += options
     end
 
     def self.before_actions *options

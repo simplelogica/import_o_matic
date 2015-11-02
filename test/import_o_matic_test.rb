@@ -112,6 +112,15 @@ class AfterProcMethodImportOptions < ImportOMmatic::Options
   end
 end
 
+class AfterMultipleImportOptions < ImportOMmatic::Options
+  after_actions :plus_one
+  after_actions ->(element) { element.update_attributes string_field: 'after' }
+
+  def plus_one element
+    element.update_attributes integer_field: element.integer_field.next
+  end
+end
+
 class ImportOMaticTest < ActiveSupport::TestCase
   fixtures :import_models
   # called before every single test
@@ -288,6 +297,16 @@ class ImportOMaticTest < ActiveSupport::TestCase
 
   test "should_call_after_action_with_proc_and_method" do
     ImportModel.import_o_matic AfterProcMethodImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal 'after', last_import.string_field
+    assert_equal @last_import_data[:integer_field].next, last_import.integer_field
+  end
+
+  test "should_call_after_action_with_multiple_declarations" do
+    ImportModel.import_o_matic AfterMultipleImportOptions
 
     ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
     last_import = ImportModel.last
