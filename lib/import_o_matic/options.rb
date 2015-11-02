@@ -81,7 +81,7 @@ module ImportOMmatic
     end
 
     def self.before_actions *options
-      self.befores = *options
+      self.befores += options
     end
 
     def get_attributes row
