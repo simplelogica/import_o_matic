@@ -165,6 +165,11 @@ Apply a named scope of the model when an item is search in incremental imports
   use_scope :custom_scope
 ```
 
+Skip validations when model is created or updated (.save(validate: false))
+```ruby
+  skip_validations
+```
+
 
 You can use different actions (create, update or delete) for incremental imports. You need a column for set the relation between import data and existing objects, and another column with the action. **When the import can´t match an action, it uses create by default**.
 

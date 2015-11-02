@@ -28,6 +28,17 @@ class MultipleTransformColumnsOptions < ImportOMmatic::Options
   end
 end
 
+class MultipleDeclarationsOptions < ImportOMmatic::Options
+  import_matches [:integer_field]
+  import_transforms integer_field: ->(value) { value.next }
+
+  import_matches string_field: [:string_field, :extra_field]
+  import_transforms string_field: :full_string
+  def full_string string, extra
+    "#{string} #{extra}"
+  end
+end
+
 class IncrementalOptions < ImportOMmatic::Options
   incremental relation: :integer_field
 end
@@ -71,6 +82,15 @@ class BeforeProcMethodImportOptions < ImportOMmatic::Options
   end
 end
 
+class BeforeMultipleImportOptions < ImportOMmatic::Options
+  before_actions :plus_one
+  before_actions ->(element) { element.string_field = 'before' }
+
+  def plus_one element
+    element.integer_field = element.integer_field.next
+  end
+end
+
 class AfterProcImportOptions < ImportOMmatic::Options
   after_actions ->(element) { element.update_attributes string_field: 'after' }
 end
@@ -90,6 +110,19 @@ class AfterProcMethodImportOptions < ImportOMmatic::Options
   def plus_one element
     element.update_attributes integer_field: element.integer_field.next
   end
+end
+
+class AfterMultipleImportOptions < ImportOMmatic::Options
+  after_actions :plus_one
+  after_actions ->(element) { element.update_attributes string_field: 'after' }
+
+  def plus_one element
+    element.update_attributes integer_field: element.integer_field.next
+  end
+end
+
+class SkipValidationsImportOptions < ImportOMmatic::Options
+  skip_validations
 end
 
 class ImportOMaticTest < ActiveSupport::TestCase
@@ -201,6 +234,16 @@ class ImportOMaticTest < ActiveSupport::TestCase
     assert_equal "#{@last_import_data[:string_field]} #{@last_import_data[:extra_field]}", last_import.string_field
   end
 
+  test "should_multiple_declarations" do
+    ImportModel.import_o_matic MultipleDeclarationsOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal @last_import_data[:integer_field].next, last_import.integer_field
+    assert_equal "#{@last_import_data[:string_field]} #{@last_import_data[:extra_field]}", last_import.string_field
+  end
+
   test "should_call_before_action_with_proc" do
     ImportModel.import_o_matic BeforeProcImportOptions
 
@@ -229,6 +272,15 @@ class ImportOMaticTest < ActiveSupport::TestCase
     assert_equal @last_import_data[:integer_field].next, last_import.integer_field
   end
 
+  test "should_call_before_action_with_multiple_declarations" do
+    ImportModel.import_o_matic BeforeMultipleImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal 'before', last_import.string_field
+    assert_equal @last_import_data[:integer_field].next, last_import.integer_field
+  end
   test "should_call_after_action_with_proc" do
     ImportModel.import_o_matic AfterProcImportOptions
 
@@ -249,6 +301,16 @@ class ImportOMaticTest < ActiveSupport::TestCase
 
   test "should_call_after_action_with_proc_and_method" do
     ImportModel.import_o_matic AfterProcMethodImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
+    last_import = ImportModel.last
+
+    assert_equal 'after', last_import.string_field
+    assert_equal @last_import_data[:integer_field].next, last_import.integer_field
+  end
+
+  test "should_call_after_action_with_multiple_declarations" do
+    ImportModel.import_o_matic AfterMultipleImportOptions
 
     ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models.csv'
     last_import = ImportModel.last
@@ -296,5 +358,24 @@ class ImportOMaticTest < ActiveSupport::TestCase
     assert ImportModel.exists?(id: import_models(:two).id)
     assert_equal @last_import_data[:string_field], last_import.string_field
     assert_equal @last_import_data[:integer_field], last_import.integer_field
+  end
+
+  test "should_not_import_with_validations" do
+    ImportModel.import_o_matic
+
+    model_count = ImportModel.count
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models_validations.csv'
+
+    assert_equal model_count, ImportModel.count
+  end
+
+  test "should_do_import_without_validations" do
+    ImportModel.import_o_matic SkipValidationsImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models_validations.csv'
+    last_import = ImportModel.last
+
+    assert_equal nil, last_import.string_field
+    assert !last_import.valid?
   end
 end
