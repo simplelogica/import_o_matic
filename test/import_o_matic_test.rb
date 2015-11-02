@@ -121,6 +121,10 @@ class AfterMultipleImportOptions < ImportOMmatic::Options
   end
 end
 
+class SkipValidationsImportOptions < ImportOMmatic::Options
+  skip_validations
+end
+
 class ImportOMaticTest < ActiveSupport::TestCase
   fixtures :import_models
   # called before every single test
@@ -354,5 +358,24 @@ class ImportOMaticTest < ActiveSupport::TestCase
     assert ImportModel.exists?(id: import_models(:two).id)
     assert_equal @last_import_data[:string_field], last_import.string_field
     assert_equal @last_import_data[:integer_field], last_import.integer_field
+  end
+
+  test "should_not_import_with_validations" do
+    ImportModel.import_o_matic
+
+    model_count = ImportModel.count
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models_validations.csv'
+
+    assert_equal model_count, ImportModel.count
+  end
+
+  test "should_do_import_without_validations" do
+    ImportModel.import_o_matic SkipValidationsImportOptions
+
+    ImportModel.import_from_file Rails.root.join 'test/fixtures/import_models_validations.csv'
+    last_import = ImportModel.last
+
+    assert_equal nil, last_import.string_field
+    assert !last_import.valid?
   end
 end

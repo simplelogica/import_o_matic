@@ -92,7 +92,7 @@ module ImportOMmatic
       end
 
       def save_element element
-        if element.save
+        if element.save(validate: import_options.validate)
           self.import_log.counter import_options.actions[:create]
         else
           self.import_log.print_errors(element.attributes.inspect, element)
@@ -112,10 +112,8 @@ module ImportOMmatic
         if element
           # Extract translations_attributes for update one to one
           translations_attributes = attributes.delete :translations_attributes
-          element.update_attributes attributes
-          if element.errors.any?
-            self.import_log.print_errors(attributes.inspect, element)
-          else
+          element.assign_attributes attributes
+          if element.save(validate: import_options.validate)
             # Translatio id is needed for nested update so we do updates one to one
             # If there is no id, the translation is created
             translations_attributes.each do |translation_attributes|
@@ -123,6 +121,8 @@ module ImportOMmatic
               translation.update_attributes translation_attributes
             end if translations_attributes
             self.import_log.counter import_options.actions[:update]
+          else
+            self.import_log.print_errors(attributes.inspect, element)
           end
         end
         element

@@ -11,7 +11,7 @@ module ImportOMmatic
                     :incremental_id_column, :incremental_id_attribute,
                     :importable_class, :translated_attributes,
                     :globalize_options, :local_file_path, :strip,
-                    :afters, :befores, :scope_name
+                    :afters, :befores, :scope_name, :validate
 
 
     self.matches = {}
@@ -23,6 +23,7 @@ module ImportOMmatic
     self.afters = []
     self.befores = []
     self.scope_name = nil
+    self.validate = true
 
     def initialize importable_class
       if importable_class.is_a?(Class)
@@ -74,6 +75,10 @@ module ImportOMmatic
 
     def self.strip_values
       self.strip = true
+    end
+
+    def self.skip_validations
+      self.validate = false
     end
 
     def self.after_actions *options
