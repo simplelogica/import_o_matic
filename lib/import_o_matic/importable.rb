@@ -12,12 +12,13 @@ module ImportOMmatic
 
     module ClassMethods
       def import_o_matic import_class = ImportOMmatic::Options
-        cattr_accessor :import_options, :import_log, :raw_data
+        cattr_accessor :import_class, :import_options, :import_log, :raw_data
+        self.import_class = import_class
         self.import_options = import_class.new self
       end
 
       def importable?
-        true
+        respond_to? :import_class
       end
 
       def import_from_local
