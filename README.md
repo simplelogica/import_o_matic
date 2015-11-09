@@ -95,6 +95,12 @@ Set a default file for local import (with import_from_local method):
   file_path 'path/to/file'
 ```
 
+Set the max logs stored in the log folder (default 10):
+
+```ruby
+  max_logs 10
+```
+
 Strip blanks arround columns after read (default false):
 
 ```ruby
