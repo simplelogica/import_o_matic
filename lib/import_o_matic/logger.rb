@@ -1,7 +1,7 @@
 module ImportOMmatic
 
   class Logger < ::Logger
-    attr_accessor :counters
+    attr_accessor :counters, :path
 
     def format_message(severity, timestamp, progname, msg)
       "#{timestamp.to_formatted_s(:db)} #{severity} #{msg}\n"
@@ -10,11 +10,11 @@ module ImportOMmatic
     def initialize object_name
       object_name.gsub!('/', '_')
       self.counters = {}
-      import_path = "log/importations/#{object_name}"
-      FileUtils.mkdir_p(import_path) unless File.directory?(import_path)
+      log_dir = "log/importations/#{object_name}"
+      FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
       timestamp = Time.now.utc.iso8601.gsub(/\W/, '')
       file_name = "#{timestamp}_#{object_name}_import.log"
-      super "#{import_path}/#{file_name}"
+      super self.path = "#{log_dir}/#{file_name}"
     end
 
     def finish
