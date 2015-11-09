@@ -22,6 +22,7 @@ module ImportOMmatic
     def finish
       self.info "---- End of importation"
       self.info "---- Results:"
+      # The returns the counters hash
       self.counters.each do |key, value|
         self.info "\t\t#{key.upcase}: #{value}" if key
       end

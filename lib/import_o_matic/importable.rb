@@ -26,6 +26,7 @@ module ImportOMmatic
       end
 
       def import_from_file file_path
+        result = {}
         self.import_log = ImportOMmatic::Logger.new(self.name.underscore, import_options.logs)
         if file_path && File.exists?(Rails.root.join file_path)
           self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
@@ -56,7 +57,7 @@ module ImportOMmatic
               self.import_log.error "Element: #{element.inspect}" if element
             end
           end
-          self.import_log.finish
+          result.merge! self.import_log.finish
         else
           self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
           self.import_log.error " File not found."
@@ -64,6 +65,9 @@ module ImportOMmatic
       rescue Exception => e
         self.import_log.error "Unexpected exception: #{e.message}"
         self.import_log.error e.backtrace
+      ensure
+        result.merge! log: self.import_log.path unless self.import_log.blank?
+        return result
       end
 
       def initialize_element attributes, action, incremental_id
