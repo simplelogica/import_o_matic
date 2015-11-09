@@ -26,9 +26,8 @@ module ImportOMmatic
       end
 
       def import_from_file file_path
+        self.import_log = ImportOMmatic::Logger.new(self.name.underscore, import_options.logs)
         if file_path && File.exists?(Rails.root.join file_path)
-
-          self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
           self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
           format_class = "import_o_matic/formats/#{import_options.format.to_s}".classify.constantize
 
@@ -50,7 +49,6 @@ module ImportOMmatic
               element = self.execute_action element, item_attributes, action
               import_options.call_after_actions element if import_options.afters.any?
             rescue Exception => e
-              self.import_log ||= ImportOMmatic::Logger.new(self.name.underscore)
               self.import_log.counter :errors
               self.import_log.error "Unexpected exception: #{e.message}"
               self.import_log.error "Backtrace: #{e.backtrace.join("\n\t")}"
@@ -60,12 +58,10 @@ module ImportOMmatic
           end
           self.import_log.finish
         else
-          self.import_log = ImportOMmatic::Logger.new(self.name.underscore)
           self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
           self.import_log.error " File not found."
         end
       rescue Exception => e
-        self.import_log ||= ImportOMmatic::Logger.new(self.name.underscore)
         self.import_log.error "Unexpected exception: #{e.message}"
         self.import_log.error e.backtrace
       end
