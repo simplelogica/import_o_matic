@@ -55,6 +55,20 @@ Take a look at _log/importations_ for process information.
 
 By default, Import-O-Matic creates a new instance of the model and try to map each column in the importation file with an attribute with same name.
 
+The return of import_from_local and import_from_file will be a hash with the relative log path, counters of the actions processed:
+
+```ruby
+{
+  :log=>
+  "log/importations/model_name/19000101T0000Z_model_name_import.log"
+  :total => 100, # Total rows processed
+  :create => 50, # Rows created
+  :update => 40, # Rows updated
+  :errors => 10, # Rows with errors (details in log file)
+}
+```
+
+
 ## :video_game: Configure
 
 Create an import config class in app/imports:
