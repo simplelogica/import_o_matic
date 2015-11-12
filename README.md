@@ -146,17 +146,17 @@ You can assign multiple columns to an attribute, but it needs a transformation o
   end
 ```
 
-Apply procs or methods to the attribute hash before import action:
+Apply procs or methods (or both like the example) to the model before import action:
 ```ruby
   before_actions :plus_one,
     ->(element) { element.string_attribute = 'after' }
 
-  def plus_one attributes
-    attributes.integer_attribute += 1
+  def plus_one element
+    element.integer_attribute += 1
   end
 ```
 
-Apply procs or methods to an element after import action:
+Apply procs or methods (or both like the example) to an element after import action:
 ```ruby
   after_actions :plus_one,
     ->(element) { element.update_attributes string_attribute: 'after' }
