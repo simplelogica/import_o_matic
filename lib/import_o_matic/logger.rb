@@ -10,7 +10,7 @@ module ImportOMmatic
     def initialize object_name, max_logs = 10
       object_name.gsub!('/', '_')
       self.counters = {}
-      log_dir = "log/importations/#{object_name}"
+      log_dir = "log/imports/#{object_name}"
       FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
       # Remove all logs unless max_logs -1 and create a new one
       clear_logs log_dir, max_logs.pred

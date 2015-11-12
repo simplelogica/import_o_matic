@@ -43,7 +43,7 @@ module ImportOMmatic
               incremental_id = row[import_options.incremental_id_column.to_s]
               self.import_log.counter :total
 
-              element = self.initialize_element item_attributes, action, incremental_id
+              element = self.initialize_element item_attributes, incremental_id
               # Assign raw data in case is useful in callbacks
               element.raw_data = row if element
               import_options.call_before_actions element if import_options.befores.any?
@@ -70,23 +70,19 @@ module ImportOMmatic
         return result
       end
 
-      def initialize_element attributes, action, incremental_id
-        case action
-        when import_options.actions[:update], import_options.actions[:destroy]
+      def initialize_element attributes, incremental_id
+        unless import_options.incremental_id_attribute.blank?
           element_scope = self.where(import_options.incremental_id_attribute => incremental_id)
           element_scope = element_scope.send(import_options.scope_name) if import_options.scope_name
           element_scope.first
-        else
-          self.new attributes
-        end
+        end || self.new(attributes) # If no incremental or element not found
       end
 
       def execute_action element, attributes, action
-        case action
-        when import_options.actions[:update]
-          update_element element, attributes
-        when import_options.actions[:destroy]
+        if action == import_options.actions[:destroy]
           destroy_element element
+        elsif !element.new_record?
+          update_element element, attributes
         else
           save_element element
         end
@@ -94,7 +90,7 @@ module ImportOMmatic
 
       def save_element element
         if element.save(validate: import_options.validate)
-          self.import_log.counter import_options.actions[:create]
+          self.import_log.counter :create
         else
           self.import_log.print_errors(element.attributes.inspect, element)
         end
@@ -103,7 +99,7 @@ module ImportOMmatic
 
       def destroy_element element
         if element
-          self.import_log.counter import_options.actions[:destroy]
+          self.import_log.counter :destroy
           element.destroy
         end
         element
@@ -121,7 +117,7 @@ module ImportOMmatic
               translation = element.translation_for translation_attributes[:locale]
               translation.update_attributes translation_attributes
             end if translations_attributes
-            self.import_log.counter import_options.actions[:update]
+            self.import_log.counter :update
           else
             self.import_log.print_errors(attributes.inspect, element)
           end

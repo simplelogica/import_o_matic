@@ -50,10 +50,24 @@ Or use a default local file (see file_path option):
   MyModel.import_from_local
 ```
 
-Take a look at _log/importations_ for process information.
+Take a look at _log/imports_ for process information.
 
 
 By default, Import-O-Matic creates a new instance of the model and try to map each column in the importation file with an attribute with same name.
+
+The return of import_from_local and import_from_file will be a hash with the relative log path, counters of the actions processed:
+
+```ruby
+{
+  :log=>
+  "log/imports/model_name/19000101T0000Z_model_name_import.log"
+  :total => 100, # Total rows processed
+  :create => 50, # Rows created
+  :update => 40, # Rows updated
+  :errors => 10, # Rows with errors (details in log file)
+}
+```
+
 
 ## :video_game: Configure
 
@@ -207,6 +221,10 @@ Set action column values:
 ```ruby
   incremental actions: { create: "ADD", update: "UPDATE", destroy: "REMOVE" }
 ```
+
+You just need to add the action column to the import file when you want remove
+an element. Create and update actions are automatically used if the element
+is found by the incremental id (update) or not (create).
 
 ### :earth_africa: Globalize 4 support
 
