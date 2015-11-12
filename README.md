@@ -50,7 +50,7 @@ Or use a default local file (see file_path option):
   MyModel.import_from_local
 ```
 
-Take a look at _log/importations_ for process information.
+Take a look at _log/imports_ for process information.
 
 
 By default, Import-O-Matic creates a new instance of the model and try to map each column in the importation file with an attribute with same name.
@@ -60,7 +60,7 @@ The return of import_from_local and import_from_file will be a hash with the rel
 ```ruby
 {
   :log=>
-  "log/importations/model_name/19000101T0000Z_model_name_import.log"
+  "log/imports/model_name/19000101T0000Z_model_name_import.log"
   :total => 100, # Total rows processed
   :create => 50, # Rows created
   :update => 40, # Rows updated
