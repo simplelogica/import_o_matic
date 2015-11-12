@@ -208,6 +208,10 @@ Set action column values:
   incremental actions: { create: "ADD", update: "UPDATE", destroy: "REMOVE" }
 ```
 
+You just need to add the action column to the import file when you want remove
+an element. Create and update actions are automatically used if the element
+is found by the incremental id (update) or not (create).
+
 ### :earth_africa: Globalize 4 support
 
 ```ruby
