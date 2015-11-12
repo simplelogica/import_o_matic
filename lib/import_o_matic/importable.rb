@@ -90,7 +90,7 @@ module ImportOMmatic
 
       def save_element element
         if element.save(validate: import_options.validate)
-          self.import_log.counter import_options.actions[:create]
+          self.import_log.counter :create
         else
           self.import_log.print_errors(element.attributes.inspect, element)
         end
@@ -99,7 +99,7 @@ module ImportOMmatic
 
       def destroy_element element
         if element
-          self.import_log.counter import_options.actions[:destroy]
+          self.import_log.counter :destroy
           element.destroy
         end
         element
@@ -117,7 +117,7 @@ module ImportOMmatic
               translation = element.translation_for translation_attributes[:locale]
               translation.update_attributes translation_attributes
             end if translations_attributes
-            self.import_log.counter import_options.actions[:update]
+            self.import_log.counter :update
           else
             self.import_log.print_errors(attributes.inspect, element)
           end
