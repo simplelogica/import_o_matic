@@ -64,7 +64,7 @@ module ImportOMmatic
         end
       rescue Exception => e
         self.import_log.error "Unexpected exception: #{e.message}"
-        self.import_log.error e.backtrace
+        self.import_log.error "Backtrace: #{e.backtrace.join("\n\t")}"
       ensure
         result.merge! log: self.import_log.path unless self.import_log.blank?
         return result
