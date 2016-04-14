@@ -22,7 +22,7 @@ module ImportOMmatic
       end
 
       def import_from_local
-          import_from_file import_options.local_file_path
+        import_from_file import_options.local_file_path
       end
 
       def import_from_file file_path
@@ -62,6 +62,7 @@ module ImportOMmatic
           self.import_log.info "---- Init #{self.model_name.human} importation from file #{file_path}"
           self.import_log.error " File not found."
         end
+        rotate_file if import_options.history_active
       rescue Exception => e
         self.import_log.error "Unexpected exception: #{e.message}"
         self.import_log.error "Backtrace: #{e.backtrace.join("\n\t")}"
@@ -123,6 +124,23 @@ module ImportOMmatic
           end
         end
         element
+      end
+
+      private def rotate_file
+        file_info = Pathname.new(import_options.local_file_path)
+        if file_info.exist?
+          history_dir = "#{file_info.dirname}/history"
+
+          FileUtils::mkdir_p(history_dir) unless Dir.exist?(history_dir)
+
+          timestamp = Time.now.utc.iso8601.gsub(/\W/, '')
+          new_filename = "#{history_dir}/#{File.basename(file_info, '.*')}_#{timestamp}#{File.extname(file_info)}"
+          FileUtils.mv(import_options.local_file_path, new_filename)
+
+          old_files = Dir.glob("#{history_dir}/*").sort_by { |path| File.mtime(path) }.reverse
+          old_files.shift(import_options.history_files) if import_options.history_files > 0
+          File.delete(*old_files)
+        end
       end
 
     end

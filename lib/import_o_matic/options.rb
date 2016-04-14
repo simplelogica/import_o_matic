@@ -11,8 +11,8 @@ module ImportOMmatic
                     :incremental_id_column, :incremental_id_attribute,
                     :importable_class, :translated_attributes,
                     :globalize_options, :local_file_path, :strip,
-                    :afters, :befores, :scope_name, :validate, :logs
-
+                    :afters, :befores, :scope_name, :validate, :logs,
+                    :history_active, :history_files
 
     self.matches = {}
     self.transforms = {}
@@ -25,6 +25,8 @@ module ImportOMmatic
     self.scope_name = nil
     self.validate = true
     self.logs = 10
+    self.history_active = false
+    self.history_files = 10
 
     def initialize importable_class
       if importable_class.is_a?(Class)
@@ -145,6 +147,11 @@ module ImportOMmatic
       self.scope_name = scope_name
     end
 
+    def self.save_history history_files = 10
+      self.history_active = true
+      self.history_files = history_files
+    end
+    
     protected
 
     def self.set_actions actions
